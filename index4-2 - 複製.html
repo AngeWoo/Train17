@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>苑史抽籤</title>
+    <link rel="icon" href="data:,">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+            background-color: #000;
+            user-select: none;
+            perspective: 1500px; /* 增加透視深度 */
+        }
+
+        @keyframes spin-3d {
+            0% { transform: translate(-50%, -50%) rotateY(0deg) rotateX(15deg) rotateZ(5deg); }
+            25% { transform: translate(-50%, -50%) rotateY(90deg) rotateX(10deg) rotateZ(2deg); }
+            50% { transform: translate(-50%, -50%) rotateY(180deg) rotateX(15deg) rotateZ(-2deg); }
+            75% { transform: translate(-50%, -50%) rotateY(270deg) rotateX(10deg) rotateZ(-5deg); }
+            100% { transform: translate(-50%, -50%) rotateY(360deg) rotateX(15deg) rotateZ(5deg); }
+        }
+        
+        /* 地球樣式 */
+        .earth {
+            width: 550px;
+            height: 550px;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            border-radius: 50%;
+            background: url('./earth.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 20;
+            box-shadow: inset 20px -20px 60px rgba(0, 0, 0, 0.8), 
+                        0 0 60px rgba(100, 150, 255, 0.5),
+                        -30px 30px 80px rgba(0, 0, 0, 0.7);
+            border: 4px solid rgba(120, 180, 255, 0.7);
+            overflow: visible;
+            animation: spin-3d 15s linear infinite;
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+        }
+        
+        /* 增強地球光澤效果 */
+        .earth::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, 
+                        rgba(255, 255, 255, 0.4) 0%, 
+                        rgba(255, 255, 255, 0.1) 15%, 
+                        transparent 50%);
+            pointer-events: none;
+            transform: translateZ(10px);
+        }
+        
+        /* 添加第二層光澤效果模擬大氣層 */
+        .earth::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 70% 70%, 
+                        transparent 50%, 
+                        rgba(100, 150, 255, 0.2) 80%, 
+                        rgba(100, 150, 255, 0.4) 100%);
+            pointer-events: none;
+            transform: translateZ(5px);
+        }
+
+        /* 環繞地球的光環文字 - 重新設計為單條 */
+        .orbit-text {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 600px;  /* 改小，貼近地球 (550px) */
+            height: 600px;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 19;
+            pointer-events: none;
+        }
+
+        /* 光環文字動畫 - 調整為更慢的速度 */
+        @keyframes orbit {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 文字閃爍動畫 - 增強效果 */
+        @keyframes text-pulse {
+            0%, 100% { opacity: 0.8; text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff; }
+            50% { opacity: 1; text-shadow: 0 0 15px #fff, 0 0 25px #fff, 0 0 35px #fff, 0 0 45px rgba(255,255,255,0.7), 0 0 60px rgba(255,255,255,0.5); }
+        }
+
+        /* 定位單條光環文字 */
+        .orbit-text-item { top: 0; transform: translateY(-50%) rotate(0deg); }
+        /* 反向光環文字動畫 */
+        @keyframes orbit-reverse {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-360deg); }
+        }
+
+        /* 文字閃爍動畫 */
+        @keyframes text-pulse {
+            0%, 100% { opacity: 0.7; text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff; }
+            50% { opacity: 1; text-shadow: 0 0 15px #fff, 0 0 25px #fff, 0 0 35px #fff, 0 0 45px rgba(255,255,255,0.5); }
+        }
+
+        /* 創建兩個旋轉的光環 */
+        .orbit-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .orbit-ring-1 {
+            animation: orbit 30s linear infinite;
+        }
+
+        .orbit-ring-2 {
+            animation: orbit-reverse 25s linear infinite;
+        }
+
+        /* 光環上的文字 */
+        .orbit-text-item {
+            position: absolute;
+            color: white;
+            font-size: 1.4em;
+            font-weight: bold;
+            white-space: nowrap;
+            animation: text-pulse 3s ease-in-out infinite;
+            transform-origin: center;
+            letter-spacing: 2px;
+        }
+
+        /* 定位第一個光環上的文字 */
+        .orbit-ring-1 .orbit-text-item:nth-child(1) { top: 0; transform: translateY(-50%) rotate(0deg); }
+        .orbit-ring-1 .orbit-text-item:nth-child(2) { bottom: 0; transform: translateY(50%) rotate(180deg); }
+
+        /* 定位第二個光環上的文字 */
+        .orbit-ring-2 .orbit-text-item:nth-child(1) { right: 0; transform: translateX(50%) rotate(90deg); }
+        .orbit-ring-2 .orbit-text-item:nth-child(2) { left: 0; transform: translateX(-50%) rotate(270deg); }
+        .orbit-text-item:nth-child(3) { bottom: 0; transform: translateY(50%) rotate(180deg); }
+        .orbit-text-item:nth-child(4) { left: 0; transform: translateX(-50%) rotate(270deg); }
+
+        /* 定位第二個光環上的文字 */
+        .orbit-ring-2 .orbit-text-item:nth-child(1) { top: 25%; right: 10%; transform: rotate(45deg); }
+        .orbit-ring-2 .orbit-text-item:nth-child(2) { bottom: 25%; right: 10%; transform: rotate(135deg); }
+        .orbit-ring-2 .orbit-text-item:nth-child(3) { bottom: 25%; left: 10%; transform: rotate(225deg); }
+        .orbit-ring-2 .orbit-text-item:nth-child(4) { top: 25%; left: 10%; transform: rotate(315deg); }
+
+        /* 移除未使用的 .earth-text-ring 相關樣式 */
+
+        /* --- Text Segment Styling --- */
+        /* 修改文字段落樣式，使其環繞地球 */
+        .text-segment {
+            position: absolute;
+            color: #fff;
+            font-size: 1.3em; /* 基本大小 */
+            white-space: nowrap;
+            padding: 10px 15px; /* 內邊距 */
+            border-radius: 8px; /* 圓角 */
+            background-color: rgba(0, 0, 0, 0.5); /* 輕微暗背景 */
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+            z-index: 25; /* 在地球上方 */
+            /* 初始狀態與過渡 */
+            display: none; /* 初始隱藏 */
+            opacity: 0;
+            transform: scale(0.5); /* 初始縮小 */
+            transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 出現過渡（包含彈跳） */
+            /* 添加弧形路徑變換 */
+            transform-origin: center center;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(3px);
+        }
+        
+        /* 其餘樣式保持不變... */
+
+        /* 文字段落可見時的樣式 - 改進版 */
+        .text-segment.visible {
+            display: block;
+            opacity: 0.9; /* 輕微透明 */
+            transform: translate(var(--x, 0px), var(--y, 0px)) scale(1); /* 使用直接坐標定位而非旋轉+平移 */
+            animation: textFloat 5s ease-in-out infinite; /* 添加漂浮動畫 */
+        }
+        
+        /* 改進的漂浮動畫 */
+        @keyframes textFloat {
+            0% { transform: translate(var(--x, 0px), var(--y, 0px)) scale(1); }
+            50% { transform: translate(var(--x, 0px), calc(var(--y, 0px) - 10px)) scale(1.05); }
+            100% { transform: translate(var(--x, 0px), var(--y, 0px)) scale(1); }
+        }
+        
+        /* 增加文字顏色變化 - 更鮮豔的顏色 */
+        .text-segment:nth-child(3n+1) { 
+            color: #ffeb3b; 
+            text-shadow: 0 0 10px rgba(255, 235, 59, 0.7), 0 0 20px rgba(255, 235, 59, 0.4); 
+            border-left: 3px solid rgba(255, 235, 59, 0.7);
+        }
+        .text-segment:nth-child(3n+2) { 
+            color: #4fc3f7; 
+            text-shadow: 0 0 10px rgba(79, 195, 247, 0.7), 0 0 20px rgba(79, 195, 247, 0.4); 
+            border-left: 3px solid rgba(79, 195, 247, 0.7);
+        }
+        .text-segment:nth-child(3n+3) { 
+            color: #ff8a65; 
+            text-shadow: 0 0 10px rgba(255, 138, 101, 0.7), 0 0 20px rgba(255, 138, 101, 0.4); 
+            border-left: 3px solid rgba(255, 138, 101, 0.7);
+        }
+
+        /* Style for fade-out before removal */
+         .text-segment.fading-out {
+             opacity: 0;
+             transform: scale(0.7);
+             transition: opacity 0.3s ease-in, transform 0.3s ease-in;
+         }
+
+
+        /* --- Final Text Styling (Lottery Result) --- */
+        #finalText {
+            position: absolute;
+            left: 50%;
+            top: 50%; /* Center vertically */
+            transform: translate(-50%, -50%) scale(0); /* Center horizontally, initially scaled down */
+            font-size: 4em; /* Large result text */
+            font-weight: bold;
+            color: #ffeb3b; /* Bright yellow */
+            display: none; /* Initially hidden */
+            text-align: center;
+            white-space: pre-line;
+            text-shadow: 0 0 20px rgba(255,235,59,0.8), 0 0 40px rgba(255,235,59,0.5);
+            z-index: 30; /* Highest */
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth appearance */
+            width: 80%; /* Limit width */
+            padding: 20px;
+            box-sizing: border-box;
+            line-height: 1.4;
+            background-color: rgba(0, 0, 0, 0.6); /* Darker background for contrast */
+            border-radius: 15px;
+        }
+
+        #finalText.show-final { /* Class to trigger final text appearance */
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        /* --- Title Text Styling --- */
+        #titleText {
+            position: absolute;
+            left: 50%;
+            top: 10%; /* Positioned higher */
+            transform: translate(-50%, -50%); /* Center horizontally */
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #ffeb3b;
+            white-space: nowrap;
+            text-shadow: 0 0 15px rgba(255,235,59,0.7), 0 0 30px rgba(255,235,59,0.4);
+            z-index: 20;
+            opacity: 1; /* Always visible initially */
+        }
+
+        /* --- Buttons Styling --- */
+         .lottery-button, .restart-button {
+             position: fixed;
+             padding: 12px 25px;
+             font-size: 18px;
+             border: none;
+             border-radius: 50px;
+             cursor: pointer;
+             transition: all 0.3s ease;
+             z-index: 100;
+             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+         }
+
+         .lottery-button {
+             right: 20px;
+             top: 20px;
+             background-color: #ffeb3b;
+             color: #333; /* Darker text for yellow button */
+         }
+        .lottery-button:hover {
+            background-color: #fff;
+            box-shadow: 0 8px 20px rgba(255, 235, 59, 0.5);
+        }
+
+         .restart-button {
+             right: 20px;
+             top: 90px; /* Spaced below lottery button */
+             background-color: #4CAF50; /* Green */
+             color: white;
+         }
+        .restart-button:hover {
+            background-color: #66bb6a; /* Lighter green */
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.5);
+        }
+
+        /* --- Media Queries for Responsiveness --- */
+        @media (max-width: 768px) {
+            .earth {
+                width: 400px;
+                height: 400px;
+            }
+            /* 移除未使用的 .earth-text-ring 相關樣式 */
+            
+            /* 其他樣式保持不變 */
+        }
+
+        @media (max-width: 480px) {
+            .earth {
+                width: 300px;
+                height: 300px;
+            }
+            /* 移除未使用的 .earth-text-ring 相關樣式 */
+            
+            /* 其他樣式保持不變 */
+        }
+
+        /* Hide earth message div as it's not used in this version */
+        #earthMessage { display: none; }
+
+    </style>
+    </head>
+<body>
+    <div class="earth"></div>
+    <button class="lottery-button">抽籤</button>
+    <button class="restart-button">重來</button>
+    <div id="finalText"></div>
+    <div id="titleText">苑史抽籤</div>
+    <audio id="bgMusic" preload="auto" loop> <source src="112.mp3" type="audio/mpeg"> </audio>
+    <audio id="applauseSound" preload="auto"> <source src="111.mp3" type="audio/mpeg"> </audio>
+
+    <script>
+        let texts = []; // Array to hold fetched texts
+        let textElements = []; // Array to hold all created text DIV elements
+        let visibleTextElements = []; // Array to track currently visible elements and their rects
+        let nextTextIndex = 0; // Index for the next text phrase to display
+        let textGenerationIntervalId = null; // ID for the setInterval timer
+        let isGeneratingText = false; // Flag to control text generation
+
+        const TEXT_GENERATION_INTERVAL = 2000; // Milliseconds between new texts (2 seconds)
+        const OVERLAP_PADDING = 15; // Pixels of padding to avoid text touching
+        const MAX_PLACEMENT_ATTEMPTS = 50; // Safety limit for finding position
+
+        // DOM Elements
+        const bgMusic = document.getElementById('bgMusic');
+        const applauseSound = document.getElementById('applauseSound');
+        const lotteryButton = document.querySelector('.lottery-button');
+        const restartButton = document.querySelector('.restart-button');
+        const finalTextDiv = document.getElementById('finalText');
+        const titleTextDiv = document.getElementById('titleText');
+
+        // --- Core Functions ---
+
+        async function fetchSheetData() {
+            console.log('Fetching sheet data...');
+            const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSELNOgRozrKO1bscsHe6doF8rH9-wSPYgvkhR5xXGhHKYvKoiXnlEC8YR3G5pPwQ2YFOksnlxYAQx-/pub?output=csv';
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const csvText = await response.text();
+                console.log('CSV data fetched.');
+
+                // Basic CSV parsing (only first column)
+                const rows = csvText.split('\n');
+                const firstColumn = rows.map(row => row.split(',')[0].trim().replace(/^"|"$/g, '')); // Get first column, trim, remove quotes
+
+                // Filter out empty lines and potential headers more reliably
+                texts = firstColumn.filter((text, index) => {
+                     if (!text) return false; // Remove empty
+                     if (index === 0 && /^[A-Za-z\s]+$/i.test(text) && text.length < 30) {
+                         console.log('Potential header removed:', text);
+                         return false; // Basic header check (alphabetic, relatively short)
+                     }
+                     return true;
+                 });
+
+                console.log(`Loaded ${texts.length} text items.`);
+
+                if (texts.length === 0) {
+                    console.warn('No data from sheet or parsing failed, using default texts.');
+                    useDefaultTexts(); // Fallback to defaults
+                }
+                return true;
+            } catch (error) {
+                console.error('Failed to fetch or parse sheet data:', error);
+                useDefaultTexts(); // Use defaults on error
+                return false;
+            }
+        }
+
+        function useDefaultTexts() {
+             texts = [
+                 "01 具備充滿自己特性的美德", "02 勿忘身為真如教徒", "03 溫柔且堅強", "04 不以自我為中心",
+                 "05 莫讓他人難過", "06 批評別人之前先反省自己", "07 不在背後道人長短", "08 勿堅持己見",
+                 "09 設身處地為他人著想", "10 身心清淨", "11 經常微笑待人", "12 成為令人珍惜的人",
+                 "13 為人誠實", "14 不引起爭執", "15 謙恭穩重", "16 尊重他人",
+                 "17 不說不必要的話"
+             ];
+             console.log(`Using ${texts.length} default text items.`);
+        }
+
+        // Pre-create all text elements but keep them hidden
+        function createTextElements() {
+            // Clear any existing elements first
+            textElements.forEach(el => el.remove());
+            textElements = [];
+
+            texts.forEach((text, index) => {
+                const div = document.createElement('div');
+                div.className = 'text-segment';
+                div.dataset.index = index; // Store original index if needed
+                // Don't set textContent yet, do it when displaying
+                document.body.appendChild(div);
+                textElements.push(div);
+            });
+            console.log(`Created ${textElements.length} hidden text elements.`);
+        }
+
+        // 顯示下一個文字段落的函數
+        function displayTextSegment() {
+            if (!isGeneratingText || textElements.length === 0) return;
+
+            if (nextTextIndex >= texts.length) {
+                nextTextIndex = 0; // 如果所有文字都已顯示，則循環回來
+            }
+
+            const textToShow = texts[nextTextIndex];
+            const elementToShow = textElements[nextTextIndex]; // 獲取預先創建的元素
+
+            if (!textToShow || !elementToShow) {
+                console.warn(`跳過索引 ${nextTextIndex}，無效的文字或元素。`);
+                nextTextIndex++;
+                return; // 如果數據不一致則跳過
+            }
+
+            // 設置文字內容
+            elementToShow.textContent = textToShow;
+             
+            // 隨機設置文字大小，增加變化
+            const randomSize = 0.9 + Math.random() * 0.6; // 0.9 到 1.5 之間的隨機值
+            elementToShow.style.fontSize = `${randomSize}em`;
+
+            const position = findNonOverlappingPosition(elementToShow);
+
+            if (position) {
+                // 不再需要設置 left 和 top，因為我們使用 CSS 變量
+                // 使用隨機延遲顯示，讓出現更加自然
+                setTimeout(() => {
+                    elementToShow.classList.add('visible');
+                }, Math.random() * 200);
+
+                // 短暫延遲後添加到可見列表以允許測量
+                setTimeout(() => {
+                    const rect = elementToShow.getBoundingClientRect();
+                    visibleTextElements.push({ element: elementToShow, rect: rect });
+                }, 50);
+
+                nextTextIndex++;
+            } else {
+                console.warn(`無法為文字找到位置: "${textToShow}"`);
+                nextTextIndex++;
+            }
+        }
+
+        // 找到一個不與可見元素重疊的隨機位置 - 改進版
+        function findNonOverlappingPosition(element) {
+            const screenW = window.innerWidth;
+            const screenH = window.innerHeight;
+            const centerX = screenW / 2;
+            const centerY = screenH / 2;
+
+            // 暫時使元素在屏幕外可見以測量其尺寸
+            element.style.visibility = 'hidden';
+            element.style.display = 'block'; // 需要顯示才能測量
+            const elementRect = element.getBoundingClientRect();
+            element.style.display = 'none'; // 立即再次隱藏
+            element.style.visibility = 'visible';
+
+            if (elementRect.width === 0 || elementRect.height === 0) {
+                console.error("無法測量元素:", element.textContent);
+                return null; // 如果大小未知則無法放置
+            }
+
+            // 計算基於屏幕大小的環繞距離
+            const minDistance = Math.min(screenW, screenH) * 0.3; // 最小距離
+            const maxDistance = Math.min(screenW, screenH) * 0.45; // 最大距離
+            
+            for (let i = 0; i < MAX_PLACEMENT_ATTEMPTS; i++) {
+                // 生成隨機角度
+                const angle = Math.random() * 360; // 0-360度
+                const radians = angle * (Math.PI / 180);
+                
+                // 在最小和最大距離之間隨機選擇一個距離
+                const distance = minDistance + Math.random() * (maxDistance - minDistance);
+                
+                // 計算弧形路徑上的位置
+                const x = centerX + Math.cos(radians) * distance - elementRect.width / 2;
+                const y = centerY + Math.sin(radians) * distance - elementRect.height / 2;
+                
+                // 設置CSS變量以便在visible類中使用
+                element.style.setProperty('--x', `${x}px`);
+                element.style.setProperty('--y', `${y}px`);
+                
+                // 潛在的新矩形基於隨機位置
+                const potentialRect = {
+                    left: x - OVERLAP_PADDING,
+                    top: y - OVERLAP_PADDING,
+                    right: x + elementRect.width + OVERLAP_PADDING,
+                    bottom: y + elementRect.height + OVERLAP_PADDING,
+                };
+
+                // 檢查是否在屏幕內
+                if (potentialRect.left < 0 || potentialRect.top < 0 || 
+                    potentialRect.right > screenW || potentialRect.bottom > screenH) {
+                    continue; // 如果超出屏幕則重試
+                }
+
+                let overlaps = false;
+                for (const visible of visibleTextElements) {
+                    if (isOverlapping(potentialRect, visible.rect)) {
+                        overlaps = true;
+                        break;
+                    }
+                }
+
+                if (!overlaps) {
+                    console.log(`為"${element.textContent}"找到位置，嘗試${i + 1}次。`);
+                    return { x, y }; // 找到一個好位置
+                }
+            }
+
+            console.warn(`在${MAX_PLACEMENT_ATTEMPTS}次嘗試後未能找到不重疊的位置。`);
+            return null; // 未能找到位置
+        }
+
+        // Simple rectangle overlap check
+        function isOverlapping(rect1, rect2) {
+            // Check if one rectangle is completely to the left of the other
+            if (rect1.right < rect2.left || rect2.right < rect1.left) {
+                return false;
+            }
+            // Check if one rectangle is completely above the other
+            if (rect1.bottom < rect2.top || rect2.bottom < rect1.top) {
+                return false;
+            }
+            // If neither of the above, they must overlap
+            return true;
+        }
+
+        // Start the text generation process
+        function startTextGeneration() {
+            if (isGeneratingText) return; // Already running
+            console.log('Starting text generation.');
+            isGeneratingText = true;
+            visibleTextElements = []; // Clear visible list
+            nextTextIndex = 0; // Reset index
+             // Ensure all elements are hidden initially before starting
+             textElements.forEach(el => {
+                 el.classList.remove('visible', 'fading-out');
+                 el.style.display = 'none'; // Hard reset display
+             });
+
+            // Call immediately once, then set interval
+            displayTextSegment();
+            textGenerationIntervalId = setInterval(displayTextSegment, TEXT_GENERATION_INTERVAL);
+        }
+
+        // Stop the text generation process
+        function stopTextGeneration() {
+            if (!isGeneratingText) return;
+            console.log('Stopping text generation.');
+            clearInterval(textGenerationIntervalId);
+            textGenerationIntervalId = null;
+            isGeneratingText = false;
+        }
+
+        // Clear all currently visible text segments with a fade-out
+        function clearVisibleText() {
+             console.log('Clearing visible text segments.');
+             visibleTextElements.forEach(visible => {
+                 visible.element.classList.add('fading-out');
+                 // Remove from DOM after fade-out transition completes
+                 setTimeout(() => {
+                      visible.element.style.display = 'none'; // Hide completely
+                      visible.element.classList.remove('visible', 'fading-out'); // Reset classes
+                 }, 300); // Corresponds to the fading-out transition duration
+             });
+             visibleTextElements = []; // Clear the tracking array immediately
+        }
+
+        // Trigger the lottery process
+        function triggerLottery() {
+            console.log('Lottery triggered.');
+            stopTextGeneration(); // Stop new text from appearing
+            
+            // 添加螢幕閃爍效果
+            const flash = document.createElement('div');
+            flash.style.position = 'fixed';
+            flash.style.top = '0';
+            flash.style.left = '0';
+            flash.style.width = '100%';
+            flash.style.height = '100%';
+            flash.style.backgroundColor = 'white';
+            flash.style.opacity = '0';
+            flash.style.zIndex = '50';
+            flash.style.transition = 'opacity 0.2s ease-in-out';
+            document.body.appendChild(flash);
+            
+            // 閃爍效果
+            setTimeout(() => {
+                flash.style.opacity = '0.7';
+                setTimeout(() => {
+                    flash.style.opacity = '0';
+                    setTimeout(() => {
+                        document.body.removeChild(flash);
+                        clearVisibleText(); // 清空現有文字
+                        
+                        // 等待文字淡出後顯示結果
+                        setTimeout(() => {
+                            // 修改：同時播放兩個音效
+                            // 重置並播放背景音樂
+                            bgMusic.currentTime = 0;
+                            bgMusic.volume = 0.4;
+                            bgMusic.play().catch(e => console.error("Background music error:", e));
+                            
+                            // 播放抽籤音效
+                            applauseSound.volume = 0.7;
+                            applauseSound.currentTime = 0;
+                            applauseSound.play().catch(e => console.error("Applause sound error:", e));
+                            
+                            // 選擇隨機文字
+                            if (texts.length === 0) {
+                                console.error("No texts available for lottery!");
+                                finalTextDiv.textContent = "錯誤：無抽籤項目";
+                            } else {
+                                const selectedIndex = Math.floor(Math.random() * texts.length);
+                                const selectedText = texts[selectedIndex];
+                                console.log('Selected:', selectedText);
+                                finalTextDiv.textContent = selectedText.replace(/(\d+)\s+(.*)/, '$1\n$2');
+                            }
+        
+                            // 顯示最終結果
+                            finalTextDiv.style.display = 'block';
+                            setTimeout(() => {
+                                finalTextDiv.classList.add('show-final');
+                            }, 20);
+        
+                            // 隱藏標題
+                            titleTextDiv.style.transition = 'opacity 0.5s ease-out';
+                            titleTextDiv.style.opacity = '0';
+                        }, 400);
+                    }, 200);
+                }, 200);
+            }, 10);
+        }
+
+        // --- Initialization ---
+
+        window.addEventListener('load', async () => {
+            console.log('Page loaded. Initializing...');
+
+            // Fetch data first
+            await fetchSheetData();
+
+            // Create hidden text elements based on fetched/default data
+            createTextElements();
+
+            // Setup buttons
+            lotteryButton.addEventListener('click', triggerLottery);
+            restartButton.addEventListener('click', () => {
+                console.log('Restarting...');
+                location.reload();
+            });
+
+            // Attempt to play background music (needs user interaction)
+             bgMusic.volume = 0.4; // Lower volume slightly
+             const playPromise = bgMusic.play();
+             if (playPromise !== undefined) {
+                 playPromise.then(_ => {
+                     console.log('Background music started automatically.');
+                 }).catch(error => {
+                     console.log('Background music autoplay blocked. Needs interaction.');
+                     // Add listeners to play on first interaction
+                     const playOnClick = () => {
+                         bgMusic.play().then(()=> console.log("Music played on interaction."));
+                         document.removeEventListener('click', playOnClick);
+                         document.removeEventListener('touchstart', playOnClick);
+                     };
+                     document.addEventListener('click', playOnClick);
+                     document.addEventListener('touchstart', playOnClick);
+                 });
+             }
+
+            // Start the text generation animation
+            startTextGeneration();
+
+        });
+
+    </script>
+</body>
+</html>
+
+<style>
+/* ... 原有樣式略 ... */
+
+.orbit-text {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 600px;  /* 改小，貼近地球 (550px) */
+    height: 600px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    z-index: 19;
+    pointer-events: none;
+}
+
+/* 移除舊的旋轉動畫 */
+.orbit-ring {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* 弧形字元樣式，使沿圓弧排列 */
+.orbit-letter {
+    position: absolute;
+    transform-origin: center center;
+    font-size: 1.4em;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 10px #fff, 0 0 20px #fff;
+    white-space: pre;
+    pointer-events: none;
+}
+
+/* 光環自轉效果 */
+@keyframes rotateRing {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.orbit-ring {
+  animation: rotateRing 25s linear infinite;
+}
+
+</style>
+
+</head>
+<body>
+<div class="earth"></div>
+<div class="orbit-text">
+    <div class="orbit-ring" id="arcTextContainer"></div>
+</div>
+<!-- 保持按鈕與音效原樣 -->
+<script>
+// 製作緊貼地球環繞的圓弧文字
+const text = "✧ 向世界與未來傳揚真如慈救之利他行 ✧";
+const container = document.getElementById('arcTextContainer');
+const radius = 300; // 半徑，與 .orbit-text 寬高一半相符，略大於地球半徑
+const startAngle = -90 - (text.length * 8) / 2; // 使整體置中
+
+for(let i=0; i<text.length; i++){
+    const char = text[i];
+    const span = document.createElement('span');
+    span.className = 'orbit-letter';
+    const angle = startAngle + i * 8; // 字距角度調整，你可微調此數字
+    span.style.transform = `rotate(${angle}deg) translate(${radius}px) rotate(${angle * -1}deg)`;
+    span.textContent = char;
+    container.appendChild(span);
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>苑歌月曆抽籤</title>
+    <link rel="icon" href="data:,">  <!-- 添加這行來避免 favicon 請求 -->
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+            background-color: #000;
+            user-select: none; /* Prevent text selection during click */
+        }
+
+        .earth {
+            width: 450px;  /* 調整電腦版地球尺寸 */
+            height: 450px;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: url('./earth.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 20;
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.5);
+            border: 3px solid rgba(255, 255, 255, 0.7);
+            overflow: visible;
+        }
+
+        @media (max-width: 768px) {
+            .earth {
+                width: 300px;  /* 保持手機版尺寸不變 */
+                height: 300px;
+            }
+        }
+        .text-segment {
+            position: absolute;
+            color: #fff;
+            font-size: 1.3em;
+            white-space: nowrap;
+            transition: all 0.3s ease-out;
+            padding: 10px;
+            border-radius: 5px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            opacity: 0.7;
+            transform-origin: center;
+            z-index: 5;
+        }
+
+        .text-segment:hover {
+            opacity: 1;
+            font-size: 1.5em;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+        }
+
+        /* 修改 finalText 樣式，使其在手機上更好顯示 */
+        /* 修改 finalText 的基本樣式 */
+        #finalText {
+            position: absolute;
+            left: 50%;
+            top: 85%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 4.5em;
+            font-weight: bold;
+            color: #ffeb3b;
+            display: none;
+            text-align: center;
+            white-space: pre-line;  /* 改為 pre-line 支持換行 */
+            text-shadow: 0 0 20px rgba(255,235,59,0.7), 0 0 40px rgba(255,235,59,0.4);
+            z-index: 20;
+            opacity: 0;
+            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;  /* 確保有足夠寬度換行 */
+            padding: 0 20px;  /* 添加左右內邊距 */
+            box-sizing: border-box;  /* 確保padding不會影響整體寬度 */
+            line-height: 1.3;  // 添加行高設置
+        }
+
+        /* 移除舊的手機版媒體查詢中的字體大小設置，因為現在由 JS 控制 */
+        @media (max-width: 768px) {
+            .earth {
+                width: 300px;
+                height: 300px;
+            }
+            
+            #finalText {
+                font-size: 5em;  /* 放大一倍 (原本 2.5em) */
+                top: 85%;       /* 與地球拉開距離 (原本 80%) */
+            }
+            
+            #titleText {
+                font-size: 2.25em;
+                top: 20%;
+            }
+            
+            .text-segment {
+                font-size: 1em;
+            }
+            
+            /* 修改手機版按鈕大小 */
+            .lottery-button, .restart-button {
+                padding: 8px 15px;  /* 縮小內邊距 */
+                font-size: 12px;    /* 縮小字體 */
+            }
+            
+            .restart-button {
+                top: 70px;  /* 調整位置讓按鈕更靠近 */
+            }
+        }
+        
+        /* 添加更小屏幕的媒體查詢 */
+        @media (max-width: 480px) {
+            .earth {
+                width: 250px;
+                height: 250px;
+            }
+            
+            #finalText {
+                font-size: 3.6em;  /* 放大一倍 (原本 1.8em) */
+                top: 85%;         /* 與地球拉開距離 (原本 75%) */
+            }
+            
+            #titleText {
+                font-size: 1.8em; /* 在更小的屏幕上進一步調整文字大小 */
+                top: 25%;
+            }
+        }
+        /* 基本樣式 */
+        #titleText {
+            position: absolute;
+            left: 50%;
+            top: 15%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 4.5em;  /* 電腦版大小 */
+            font-weight: bold;
+            color: #ffeb3b;
+            display: none;
+            white-space: nowrap;
+            text-shadow: 0 0 20px rgba(255,235,59,0.7), 0 0 40px rgba(255,235,59,0.4);
+            z-index: 20;
+            opacity: 0;
+            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 手機版樣式 */
+        @media (max-width: 768px) {
+            #titleText {
+                font-size: 2.25em !important;
+                top: 10% !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #titleText {
+                font-size: 2.4em !important;  /* 小螢幕也加大字體 */
+                top: 12% !important;
+            }
+        }
+        #titleText {
+            position: absolute;
+            left: 50%;
+            top: 15%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 4.5em;
+            font-weight: bold;
+            color: #ffeb3b;
+            display: none;
+            white-space: nowrap;
+            text-shadow: 0 0 20px rgba(255,235,59,0.7), 0 0 40px rgba(255,235,59,0.4);
+            z-index: 20;
+            opacity: 0;
+            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #earthMessage {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 400px;
+            display: none;
+            z-index: 21;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+        }
+
+        .show-final {
+            transform: translate(-50%, -50%) scale(1) !important;
+            opacity: 1 !important;
+        }
+
+        /* 基本按鈕樣式 */
+        .lottery-button {
+            position: fixed;
+            right: 20px;
+            top: 30px;
+            padding: 15px 30px;
+            font-size: 24px;
+            background-color: #ffeb3b;
+            color: #000;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(255, 235, 59, 0.4);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .restart-button {
+            position: fixed;
+            right: 20px;
+            top: 120px;
+            padding: 15px 30px;
+            font-size: 24px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        /* 手機版按鈕樣式 */
+        @media (max-width: 768px) {
+            .lottery-button, .restart-button {
+                padding: 8px 15px !important;
+                font-size: 14px !important;
+                right: 10px;
+            }
+            
+            .lottery-button {
+                top: 20px;
+            }
+            
+            .restart-button {
+                top: 70px;
+            }
+        }
+        .restart-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.6);
+        }
+
+        .restart-button:active {
+            transform: scale(0.95);
+        }
+    </style>
+    <script>
+        // 檢查地球圖片是否正確加載
+        window.addEventListener('load', function() {
+            const earthDiv = document.querySelector('.earth');
+            const img = new Image();
+            img.onload = function() {
+                console.log('地球圖片加載成功');
+            };
+            img.onerror = function() {
+                console.error('地球圖片加載失敗，使用備用樣式');
+                earthDiv.style.background = 'radial-gradient(circle, #1a4d7e, #0a2744)';
+                earthDiv.style.boxShadow = '0 0 60px rgba(26, 77, 126, 0.8)';
+            };
+            // 從計算樣式中獲取背景圖片URL
+            const bgImage = getComputedStyle(earthDiv).backgroundImage;
+            const urlMatch = bgImage.match(/url\(['"]?(.*?)['"]?\)/);
+            if (urlMatch && urlMatch[1]) {
+                img.src = urlMatch[1];
+            } else {
+                img.onerror();
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="earth"></div>
+    <button class="lottery-button">抽籤</button>
+    <button class="restart-button">重來</button>
+    <div id="finalText"></div>
+    <div id="titleText">苑歌月曆</div>
+    <div id="earthMessage"></div>
+    <!-- 添加音頻元素 -->
+    <audio id="bgMusic" preload="auto" loop>
+        <source src="112.mp3" type="audio/mpeg">
+    </audio>
+    <!-- 添加拍手音效 -->
+    <audio id="applauseSound" preload="auto">
+        <source src="111.mp3" type="audio/mpeg">
+    </audio>
+    <script>
+        // 將 const 改為 let
+        // 只保留一組變量聲明
+        let texts = []; // 初始化為空數組，稍後從Google Sheet獲取
+        let textElements = [];
+        const radius = 420;
+        let isAnimating = false;
+        let animationFrameId = null;
+        let angle = 0;
+        let isFirstTrigger = true;
+        const bgMusic = document.getElementById('bgMusic');
+        const applauseSound = document.getElementById('applauseSound');
+        
+        console.log('初始化變量完成');
+
+        // 修改 fetchSheetData 函數，添加更多日誌
+        async function fetchSheetData() {
+            console.log('開始執行 fetchSheetData 函數');
+            const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ460JG-VN9wTTLsP3KW-E6K9VIxABJyFbfCFyDRJ1mOHDjSZUZbwXnxcMBNfaxZ1pImlNRjtl6BFd5/pub?output=csv&gid=1849192936';
+            try {
+                console.log('開始從 Google Sheet 獲取數據，URL:', url);
+                const response = await fetch(url);
+                console.log('獲取到響應，狀態碼:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP 錯誤! 狀態: ${response.status}`);
+                }
+                
+                const csvText = await response.text();
+                console.log('獲取得的原始CSV數據 (前100字符):', csvText.substring(0, 100));
+                console.log('CSV數據總長度:', csvText.length);
+
+                // 解析CSV數據，只取A欄
+                const rows = csvText.split('\n');
+                console.log('分割後的行數:', rows.length);
+                console.log('第一行數據:', rows[0]);
+
+                const firstColumn = rows.map(row => {
+                    const parts = row.split(',');
+                    console.log('行分割結果:', parts);
+                    return parts[0];
+                });
+                console.log('提取A欄數據 (前5項):', firstColumn.slice(0, 5));
+
+                // 過濾空值
+                texts = firstColumn.filter(text => text && text.trim());
+                console.log('過濾空值後的數據數量:', texts.length);
+                
+                // 移除可能的標題行
+                if (texts.length > 0 && (texts[0].toLowerCase().includes('header') || texts[0].match(/^[A-Za-z]/))) {
+                    console.log('檢測到標題行，移除:', texts[0]);
+                    texts.shift();
+                }
+
+                console.log('最終處理後的文字數組 (前5項):', texts.slice(0, 5));
+                console.log('總共載入 ' + texts.length + ' 條數據');
+
+                // 如果沒有獲取到數據，使用默認數據
+                if (texts.length === 0) {
+                    console.warn('從Google Sheet獲取的數據為空，使用默認數據');
+                    texts = [
+                        "01 具備充滿自己特性的美德", "02 勿忘身為真如教徒", "03 溫柔且堅強", "04 不以自我為中心",
+                        "05 莫讓他人難過", "06 批評別人之前先反省自己", "07 不在背後道人長短", "08 勿堅持己見",
+                        "09 設身處地為他人著想", "10 身心清淨", "11 經常微笑待人", "12 成為令人珍惜的人",
+                        "13 為人誠實", "14 不引起爭執", "15 謙恭穩重", "16 尊重他人",
+                        "17 不說不必要的話"
+                    ];
+                }
+                
+                // 更新maxSegments
+                window.maxSegments = texts.length;
+                console.log('更新maxSegments為:', window.maxSegments);
+
+                // 初始化文字元素
+                initializeTextElements();
+                return true;
+            } catch (error) {
+                console.error('獲取 Sheet 數據失敗:', error);
+                console.error('錯誤詳情:', error.message);
+                console.error('錯誤堆棧:', error.stack);
+                
+                // 使用默認數據
+                console.warn('由於錯誤，使用默認數據');
+                texts = [
+                    "01 具備充滿自己特性的美德", "02 勿忘身為真如教徒", "03 溫柔且堅強", "04 不以自我為中心",
+                    "05 莫讓他人難過", "06 批評別人之前先反省自己", "07 不在背後道人長短", "08 勿堅持己見",
+                    "09 設身處地為他人著想", "10 身心清淨", "11 經常微笑待人", "12 成為令人珍惜的人",
+                    "13 為人誠實", "14 不引起爭執", "15 謙恭穩重", "16 尊重他人",
+                    "17 不說不必要的話"
+                ];
+                
+                // 更新maxSegments
+                window.maxSegments = texts.length;
+                console.log('更新maxSegments為:', window.maxSegments);
+                
+                // 初始化文字元素
+                initializeTextElements();
+                return false;
+            }
+        }
+        
+        // 修改 Create text elements 函數
+        function initializeTextElements() {
+            console.log('開始初始化文字元素，文字數量:', texts.length);
+            
+            // 清除現有的文字元素
+            if (textElements.length > 0) {
+                console.log('清除現有的文字元素，數量:', textElements.length);
+                textElements.forEach(el => el.remove());
+                textElements = [];
+            }
+            
+            // 創建新的文字元素
+            console.log('開始創建新的文字元素');
+            texts.forEach((text, i) => {
+                const div = document.createElement('div');
+                div.className = 'text-segment';
+                div.textContent = text;
+                div.style.opacity = '0';
+                div.style.display = 'none';
+                document.body.appendChild(div);
+                textElements.push(div);
+            });
+            console.log('創建了', textElements.length, '個文字元素');
+            
+            // 初始化位置
+            console.log('開始初始化文字位置');
+            initializeTextPositions();
+        }
+
+        // 只保留一個 window.load 事件監聽器
+        window.addEventListener('load', async () => {
+            console.log('頁面加載完成，開始初始化');
+            
+            // 檢查地球圖片
+            const earthDiv = document.querySelector('.earth');
+            console.log('獲取地球元素:', earthDiv);
+            
+            // 先獲取 Google Sheet 數據
+            console.log('開始獲取Google Sheet數據');
+            const success = await fetchSheetData();
+            console.log('Google Sheet數據獲取' + (success ? '成功' : '失敗，使用默認數據'));
+            
+            // 播放背景音樂
+            console.log('嘗試播放背景音樂');
+            bgMusic.volume = 0.5;
+            bgMusic.play().then(() => {
+                console.log('背景音樂開始播放成功');
+            }).catch(e => {
+                console.log('背景音樂需要使用者互動才能播放:', e);
+                const playMusic = () => {
+                    bgMusic.play().then(() => {
+                        console.log('用戶互動後音樂播放成功');
+                    }).catch(err => {
+                        console.error('即使有用戶互動，音樂播放仍然失敗:', err);
+                    });
+                    document.removeEventListener('click', playMusic);
+                };
+                document.addEventListener('click', playMusic);
+            });
+            
+            // 顯示文字元素
+            console.log('延遲100ms後顯示文字元素');
+            setTimeout(() => {
+                console.log('開始顯示', textElements.length, '個文字元素');
+                textElements.forEach((el, i) => {
+                    el.style.display = 'block';
+                    el.style.transition = 'opacity 0.5s ease-in-out';
+                    setTimeout(() => {
+                        el.style.opacity = '0.7';
+                        if (i === textElements.length - 1) {
+                            console.log('所有文字元素顯示完成');
+                        }
+                    }, 50);
+                });
+                
+                console.log('開始動畫');
+                startAnimation();
+                isFirstTrigger = false;
+            }, 100);
+
+            // 按鈕點擊事件
+            console.log('設置按鈕點擊事件');
+            const lotteryButton = document.querySelector('.lottery-button');
+            lotteryButton.addEventListener('click', () => {
+                console.log('抽籤按鈕被點擊，isAnimating:', isAnimating);
+                if (isAnimating) {
+                    triggerLottery();
+                }
+            });
+
+            const restartButton = document.querySelector('.restart-button');
+            restartButton.addEventListener('click', () => {
+                console.log('重來按鈕被點擊，重新載入頁面');
+                location.reload();
+            });
+        });
+
+        function updatePositions() {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+
+            textElements.forEach((el, i) => {
+                const individualAngle = angle + (i * (2 * Math.PI / maxSegments));
+                const textLength = el.textContent.length;
+                const dynamicRadius = radius + (textLength > 15 ? 50 : 0);
+
+                const x = centerX + Math.cos(individualAngle) * dynamicRadius;
+                const y = centerY + Math.sin(individualAngle) * dynamicRadius;
+
+                el.style.left = `${x}px`;
+                el.style.top = `${y}px`;
+                el.style.transform = 'translateX(-50%)';
+
+                const normalizedAngle = (individualAngle + Math.PI) % (2 * Math.PI);
+                const opacity = normalizedAngle > Math.PI ? 0.5 : 1;
+                el.style.opacity = opacity;
+            });
+
+            angle += 0.005; // Slow down the rotation
+        }
+
+        function animate() {
+            if (!isAnimating) return;
+            updatePositions();
+            animationFrameId = requestAnimationFrame(animate);
+        }
+
+        function startAnimation() {
+            isAnimating = true;
+            animate();
+            
+            // 播放背景音樂
+            bgMusic.volume = 0.5;
+            bgMusic.play().catch(function(e) {
+                console.log("自動播放被阻止，需要用戶互動", e);
+            });
+        }
+
+        function stopAnimation() {
+            isAnimating = false;
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            // 確保背景音樂停止
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+        }
+
+        // 初始化文字位置但不旋轉
+        function initializeTextPositions() {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+
+            textElements.forEach((el, i) => {
+                const individualAngle = i * (2 * Math.PI / maxSegments);
+                const textLength = el.textContent.length;
+                const dynamicRadius = radius + (textLength > 15 ? 50 : 0);
+
+                const x = centerX + Math.cos(individualAngle) * dynamicRadius;
+                const y = centerY + Math.sin(individualAngle) * dynamicRadius;
+
+                el.style.left = `${x}px`;
+                el.style.top = `${y}px`;
+                el.style.transform = 'translateX(-50%)';
+                el.style.opacity = '0.7';
+            });
+        }
+
+        // 頁面載入時初始化文字位置但不旋轉
+        window.addEventListener('load', () => {
+            // 先初始化位置，再顯示元素
+            initializeTextPositions();
+            
+            // 直接嘗試播放背景音樂
+            bgMusic.volume = 0.5;
+            bgMusic.play().then(() => {
+                console.log('背景音樂開始播放');
+            }).catch(e => {
+                console.log('背景音樂需要使用者互動才能播放:', e);
+                const playMusic = () => {
+                    bgMusic.play();
+                    document.removeEventListener('click', playMusic);
+                };
+                document.addEventListener('click', playMusic);
+            });
+            
+            setTimeout(() => {
+                textElements.forEach(el => {
+                    el.style.display = 'block';
+                    el.style.transition = 'opacity 0.5s ease-in-out';
+                    setTimeout(() => {
+                        el.style.opacity = '0.7';
+                    }, 50);
+                });
+                
+                startAnimation();
+                isFirstTrigger = false;
+            }, 100);
+
+            // 按鈕點擊事件
+            const lotteryButton = document.querySelector('.lottery-button');
+            lotteryButton.addEventListener('click', () => {
+                if (isAnimating) {
+                    triggerLottery();
+                }
+            });
+
+            const restartButton = document.querySelector('.restart-button');
+            restartButton.addEventListener('click', () => {
+                location.reload();
+            });
+        });
+
+        function triggerLottery() {
+            if(isAnimating) {
+                stopAnimation(); // 停止動畫
+                bgMusic.pause(); // 停止背景音樂
+                bgMusic.currentTime = 0; // 重置音樂播放位置
+                
+                // 播放拍手音效
+                applauseSound.volume = 0.7;
+                applauseSound.currentTime = 0;
+                applauseSound.play();
+
+                const selectedIndex = Math.floor(Math.random() * texts.length);
+
+                textElements.forEach(el => {
+                    el.style.transition = 'all 0.8s ease-out';
+                    el.style.opacity = '0';
+                    setTimeout(() => {
+                        el.style.display = 'none';
+                    }, 800);
+                });
+
+                const selectedText = texts[selectedIndex];
+                const finalText = document.getElementById('finalText');
+                
+                // 修改文字處理邏輯
+                if (window.innerWidth <= 768) {
+                    const parts = selectedText.split(/(\d+)\s+/);
+                    if (parts.length >= 3) {
+                        const number = parts[1];
+                        const content = parts[2];
+                        finalText.textContent = `${number}\n${content}`;
+                    } else {
+                        finalText.textContent = selectedText;
+                    }
+                } else {
+                    finalText.textContent = selectedText;
+                }
+
+                finalText.style.display = 'block';
+                
+                // 檢測是否為手機設備
+                const isMobile = window.innerWidth <= 768;
+                
+                // 顯示標題文字
+                const titleText = document.getElementById('titleText');
+                titleText.style.display = 'block';
+                
+                // 在地球內顯示弧形文字
+                const earthMessage = document.getElementById('earthMessage');
+                earthMessage.style.display = 'block';
+                
+                // 使用Canvas繪製弧形文字
+                const message = "向世界與未來傳揚真如慈救之利他行";
+                drawCurvedText(earthMessage, message);
+                
+                setTimeout(() => {
+                    finalText.classList.add('show-final');
+                    titleText.classList.add('show-final');
+                    earthMessage.style.opacity = '1';
+                    
+                    // 修改手機版字體大小和位置設置
+                    if (isMobile) {
+                        if (window.innerWidth <= 480) {
+                            finalText.style.fontSize = '1.2em';
+                        } else {
+                            finalText.style.fontSize = '1.6em';
+                        }
+                        finalText.style.top = '90%';  // 縮小與地球的距離
+                    } else {
+                        finalText.style.fontSize = '1.75em';  // 電腦版保持不變
+                    }
+                }, 100);
+                
+                isFirstTrigger = false;
+            } else if (!isFirstTrigger) {
+                // 抽籤結束後，再次點擊將重新載入頁面
+                location.reload();
+            }
+        }
+        
+        // 繪製弧形文字的函數
+        function drawCurvedText(container, text) {
+            // 清除之前的內容
+            container.innerHTML = '';
+            
+            // 創建Canvas元素
+            const canvas = document.createElement('canvas');
+            canvas.width = 450;
+            canvas.height = 450;
+            container.appendChild(canvas);
+            
+            const ctx = canvas.getContext('2d');
+            
+            // 檢測是否為手機設備
+            const isMobile = window.innerWidth <= 768;
+            
+            // 設置文字大小和樣式
+            const maxFontSize = isMobile ? 28 : 42;
+            const minFontSize = isMobile ? 8 : 12;
+            
+            // 將文字分成兩行
+            const lines = ['向世界與未來傳揚', '真如慈救之利他行'];
+            
+            let currentSize = minFontSize;
+            let opacity = 0.3;
+            let isIncreasing = true;
+            
+            // 創建動畫函數
+            const animate = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // 設置文字樣式
+                ctx.font = `${currentSize}px Arial`;
+                ctx.fillStyle = `rgba(255, 235, 59, ${opacity})`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                // 繪製兩行文字
+                const lineHeight = currentSize * 1.2;
+                const centerY = canvas.height / 2 - 20;
+                const offsetX = -25;  // 從-15改為-25，向左移動10像素
+                
+                lines.forEach((line, index) => {
+                    const y = centerY + (index - 0.5) * lineHeight;
+                    ctx.fillText(line, canvas.width / 2 + offsetX, y);
+                });
+                
+                // 控制文字大小和閃爍效果
+                if (currentSize < maxFontSize) {
+                    currentSize += 0.8;
+                    requestAnimationFrame(animate);
+                } else {
+                    // 降低閃爍速度：將透明度變化率從 0.03 改為 0.01
+                    if (isIncreasing) {
+                        opacity += 0.01;
+                        if (opacity >= 1) isIncreasing = false;
+                    } else {
+                        opacity -= 0.01;
+                        if (opacity <= 0.3) isIncreasing = true;
+                    }
+                    requestAnimationFrame(animate);
+                }
+            };
+            
+            // 開始動畫
+            animate();
+        }
+        
+        // 修改地球點擊事件相關代碼
+        window.addEventListener('load', () => {
+            // 先初始化位置，再顯示元素
+            initializeTextPositions();
+            
+            // 直接嘗試播放背景音樂
+            bgMusic.volume = 0.5;
+            bgMusic.play().then(() => {
+                console.log('背景音樂開始播放');
+            }).catch(e => {
+                console.log('背景音樂需要使用者互動才能播放:', e);
+                const playMusic = () => {
+                    bgMusic.play();
+                    document.removeEventListener('click', playMusic);
+                };
+                document.addEventListener('click', playMusic);
+            });
+            
+            setTimeout(() => {
+                textElements.forEach(el => {
+                    el.style.display = 'block';
+                    el.style.transition = 'opacity 0.5s ease-in-out';
+                    setTimeout(() => {
+                        el.style.opacity = '0.7';
+                    }, 50);
+                });
+                
+                startAnimation();
+                isFirstTrigger = false;
+            }, 100);
+
+            // 按鈕點擊事件
+            const lotteryButton = document.querySelector('.lottery-button');
+            lotteryButton.addEventListener('click', () => {
+                if (isAnimating) {
+                    triggerLottery();
+                }
+            });
+
+            const restartButton = document.querySelector('.restart-button');
+            restartButton.addEventListener('click', () => {
+                location.reload();
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>法母十七訓輪播抽籤</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+            background-color: #000;
+            user-select: none; /* Prevent text selection during click */
+        }
+
+        .earth {
+            width: 500px; /* 加大地球尺寸 */
+            height: 500px; /* 加大地球尺寸 */
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: url('./earth.jpg'); /* 修正圖片路徑，使用相對路徑 */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 20; /* 提高 z-index 確保在最上層 */
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.5); /* 調整陰影效果 */
+            border: 3px solid rgba(255, 255, 255, 0.7); /* 調整邊框效果 */
+            overflow: visible; /* 確保內容不被裁剪 */
+        }
+
+        /* 其餘 CSS 保持不變 */
+        .text-segment {
+            position: absolute;
+            color: #fff;
+            font-size: 1.3em;
+            white-space: nowrap;
+            transition: all 0.3s ease-out;
+            padding: 10px;
+            border-radius: 5px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            opacity: 0.7;
+            transform-origin: center;
+            z-index: 5;
+        }
+
+        .text-segment:hover {
+            opacity: 1;
+            font-size: 1.5em;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+        }
+
+        #finalText {
+            position: absolute;
+            left: 50%;
+            top: 85%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 4.5em;
+            font-weight: bold;
+            color: #ffeb3b;
+            display: none;
+            white-space: nowrap;
+            text-shadow: 0 0 20px rgba(255,235,59,0.7), 0 0 40px rgba(255,235,59,0.4);
+            z-index: 20;
+            opacity: 0;
+            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #titleText {
+            position: absolute;
+            left: 50%;
+            top: 15%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 4.5em;
+            font-weight: bold;
+            color: #ffeb3b;
+            display: none;
+            white-space: nowrap;
+            text-shadow: 0 0 20px rgba(255,235,59,0.7), 0 0 40px rgba(255,235,59,0.4);
+            z-index: 20;
+            opacity: 0;
+            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #earthMessage {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 400px;
+            display: none;
+            z-index: 21;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+        }
+
+        .show-final {
+            transform: translate(-50%, -50%) scale(1) !important;
+            opacity: 1 !important;
+        }
+
+        .lottery-button {
+            position: fixed;
+            right: 20px;
+            top: 30px; /* 調整抽籤按鈕位置 */
+            padding: 15px 30px;
+            font-size: 24px;
+            background-color: #ffeb3b;
+            color: #000;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(255, 235, 59, 0.4);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .lottery-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(255, 235, 59, 0.6);
+        }
+
+        .lottery-button:active {
+            transform: scale(0.95);
+        }
+
+        .restart-button {
+            position: fixed;
+            right: 20px;
+            top: 120px; /* 增加與抽籤按鈕的間距 */
+            padding: 15px 30px;
+            font-size: 24px;
+            background-color: #4CAF50; /* 綠色 */
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .restart-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.6);
+        }
+
+        .restart-button:active {
+            transform: scale(0.95);
+        }
+    </style>
+    <script>
+        // 檢查地球圖片是否正確加載
+        window.addEventListener('load', function() {
+            const earthDiv = document.querySelector('.earth');
+            const img = new Image();
+            img.onload = function() {
+                console.log('地球圖片加載成功');
+            };
+            img.onerror = function() {
+                console.error('地球圖片加載失敗，使用備用樣式');
+                earthDiv.style.background = 'radial-gradient(circle, #1a4d7e, #0a2744)';
+                earthDiv.style.boxShadow = '0 0 60px rgba(26, 77, 126, 0.8)';
+            };
+            // 從計算樣式中獲取背景圖片URL
+            const bgImage = getComputedStyle(earthDiv).backgroundImage;
+            const urlMatch = bgImage.match(/url\(['"]?(.*?)['"]?\)/);
+            if (urlMatch && urlMatch[1]) {
+                img.src = urlMatch[1];
+            } else {
+                img.onerror();
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="earth"></div>
+    <button class="lottery-button">抽籤</button>
+    <button class="restart-button">重來</button>
+    <div id="finalText"></div>
+    <div id="titleText">法母十七訓</div>
+    <div id="earthMessage"></div>
+    <!-- 添加音頻元素 -->
+    <audio id="bgMusic" preload="auto" loop>
+        <source src="112.mp3" type="audio/mpeg">
+    </audio>
+    <!-- 添加拍手音效 -->
+    <audio id="applauseSound" preload="auto">
+        <source src="111.mp3" type="audio/mpeg">
+    </audio>
+    <script>
+        const texts = [
+            "01 具備充滿自己特性的美德", "02 勿忘身為真如教徒", "03 溫柔且堅強", "04 不以自我為中心",
+            "05 莫讓他人難過", "06 批評別人之前先反省自己", "07 不在背後道人長短", "08 勿堅持己見",
+            "09 設身處地為他人著想", "10 身心清淨", "11 經常微笑待人", "12 成為令人珍惜的人",
+            "13 為人誠實", "14 不引起爭執", "15 謙恭穩重", "16 尊重他人",
+            "17 不說不必要的話"
+        ];
+
+        const maxSegments = texts.length;
+        const radius = 420; /* 增大旋轉半徑 */
+        let textElements = [];
+        let isAnimating = false;
+        let animationFrameId = null;
+        let angle = 0;
+        let isFirstTrigger = true;
+        const bgMusic = document.getElementById('bgMusic');
+        const applauseSound = document.getElementById('applauseSound');
+        
+        // Create text elements
+        texts.forEach((text, i) => {
+            const div = document.createElement('div');
+            div.className = 'text-segment';
+            div.textContent = text;
+            div.style.opacity = '0'; // 初始設置為不可見
+            div.style.display = 'none'; // 初始設置為不顯示
+            document.body.appendChild(div);
+            textElements.push(div);
+        });
+
+        function updatePositions() {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+
+            textElements.forEach((el, i) => {
+                const individualAngle = angle + (i * (2 * Math.PI / maxSegments));
+                const textLength = el.textContent.length;
+                const dynamicRadius = radius + (textLength > 15 ? 50 : 0);
+
+                const x = centerX + Math.cos(individualAngle) * dynamicRadius;
+                const y = centerY + Math.sin(individualAngle) * dynamicRadius;
+
+                el.style.left = `${x}px`;
+                el.style.top = `${y}px`;
+                el.style.transform = 'translateX(-50%)';
+
+                const normalizedAngle = (individualAngle + Math.PI) % (2 * Math.PI);
+                const opacity = normalizedAngle > Math.PI ? 0.5 : 1;
+                el.style.opacity = opacity;
+            });
+
+            angle += 0.005; // Slow down the rotation
+        }
+
+        function animate() {
+            if (!isAnimating) return;
+            updatePositions();
+            animationFrameId = requestAnimationFrame(animate);
+        }
+
+        function startAnimation() {
+            isAnimating = true;
+            animate();
+            
+            // 播放背景音樂
+            bgMusic.volume = 0.5;
+            bgMusic.play().catch(function(e) {
+                console.log("自動播放被阻止，需要用戶互動", e);
+            });
+        }
+
+        function stopAnimation() {
+            isAnimating = false;
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            // 確保背景音樂停止
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+        }
+
+        // 初始化文字位置但不旋轉
+        function initializeTextPositions() {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+
+            textElements.forEach((el, i) => {
+                const individualAngle = i * (2 * Math.PI / maxSegments);
+                const textLength = el.textContent.length;
+                const dynamicRadius = radius + (textLength > 15 ? 50 : 0);
+
+                const x = centerX + Math.cos(individualAngle) * dynamicRadius;
+                const y = centerY + Math.sin(individualAngle) * dynamicRadius;
+
+                el.style.left = `${x}px`;
+                el.style.top = `${y}px`;
+                el.style.transform = 'translateX(-50%)';
+                el.style.opacity = '0.7';
+            });
+        }
+
+        // 頁面載入時初始化文字位置但不旋轉
+        window.addEventListener('load', () => {
+            // 先初始化位置，再顯示元素
+            initializeTextPositions();
+            
+            // 直接嘗試播放背景音樂
+            bgMusic.volume = 0.5;
+            bgMusic.play().then(() => {
+                console.log('背景音樂開始播放');
+            }).catch(e => {
+                console.log('背景音樂需要使用者互動才能播放:', e);
+                // 如果自動播放失敗，添加一次性點擊事件來播放音樂
+                const playMusic = () => {
+                    bgMusic.play();
+                    document.removeEventListener('click', playMusic);
+                };
+                document.addEventListener('click', playMusic);
+            });
+            
+            setTimeout(() => {
+                textElements.forEach(el => {
+                    el.style.display = 'block';
+                    el.style.transition = 'opacity 0.5s ease-in-out'; // 添加過渡效果
+                    setTimeout(() => {
+                        el.style.opacity = '0.7';
+                    }, 50);
+                });
+                
+                startAnimation();
+                isFirstTrigger = false;
+                
+            }, 100);
+
+            // 移除地球點擊事件，改為按鈕點擊事件
+            const lotteryButton = document.querySelector('.lottery-button');
+            lotteryButton.addEventListener('click', () => {
+                if (isAnimating) {
+                    triggerLottery();
+                }
+            });
+
+            // 添加重來按鈕點擊事件
+            const restartButton = document.querySelector('.restart-button');
+            restartButton.addEventListener('click', () => {
+                location.reload();
+            });
+        });
+
+        function triggerLottery() {
+            if(isAnimating) {
+                stopAnimation(); // 停止動畫
+                bgMusic.pause(); // 停止背景音樂
+                bgMusic.currentTime = 0; // 重置音樂播放位置
+                
+                // 播放拍手音效
+                applauseSound.volume = 0.7;
+                applauseSound.currentTime = 0;
+                applauseSound.play();
+
+                const selectedIndex = Math.floor(Math.random() * texts.length);
+
+                textElements.forEach(el => {
+                    el.style.transition = 'all 0.8s ease-out';
+                    el.style.opacity = '0';
+                    setTimeout(() => {
+                        el.style.display = 'none';
+                    }, 800);
+                });
+
+                const finalText = document.getElementById('finalText');
+                finalText.textContent = texts[selectedIndex];
+                finalText.style.display = 'block';
+                
+                // 顯示標題文字
+                const titleText = document.getElementById('titleText');
+                titleText.style.display = 'block';
+                
+                // 在地球內顯示弧形文字
+                const earthMessage = document.getElementById('earthMessage');
+                earthMessage.style.display = 'block';
+                
+                // 使用Canvas繪製弧形文字
+                const message = "向世界與未來傳揚真如慈救之利他行";
+                drawCurvedText(earthMessage, message);
+                
+                setTimeout(() => {
+                    finalText.classList.add('show-final');
+                    titleText.classList.add('show-final');
+                    earthMessage.style.opacity = '1';
+                }, 100);
+                
+                isFirstTrigger = false;
+            } else if (!isFirstTrigger) {
+                // 抽籤結束後，再次點擊將重新載入頁面
+                location.reload();
+            }
+        }
+        
+        // 繪製弧形文字的函數
+        function drawCurvedText(container, text) {
+            // 清除之前的內容
+            container.innerHTML = '';
+            
+            // 創建Canvas元素
+            const canvas = document.createElement('canvas');
+            canvas.width = 400;
+            canvas.height = 400;
+            container.appendChild(canvas);
+            
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 設置文字樣式
+            ctx.font = '28px Arial'; // 保持字體大小
+            ctx.fillStyle = '#ffeb3b'; // 黃色
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)'; // 黑色陰影
+            ctx.shadowBlur = 10; // 陰影模糊度
+            
+            // 繪製弧形文字
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 180; // 保持半徑不變
+            
+            // 調整角度範圍，使左側更高
+            const startAngle = Math.PI * 1.45; // 增大起始角度使左側更高
+            const endAngle = Math.PI * 0.55; // 調整結束角度
+            
+            // 計算每個字符的角度，保持較大間距
+            const totalAngle = endAngle - startAngle;
+            // 調整間距係數，使用更小的值增加間距
+            const anglePerChar = totalAngle / (text.length * 0.45); 
+            
+            // 繪製每個字符
+            for (let i = 0; i < text.length; i++) {
+                const charAngle = startAngle + i * anglePerChar;
+                const x = centerX + Math.cos(charAngle) * radius;
+                const y = centerY + Math.sin(charAngle) * radius;
+                
+                // 旋轉文字以保持正向
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.fillText(text[i], 0, 0);
+                ctx.restore();
+            }
+        }
+        
+        // 修改地球點擊事件
+        window.addEventListener('load', () => {
+            // ... 現有代碼 ...
+            
+            // 添加地球點擊事件
+            const earthDiv = document.querySelector('.earth');
+            earthDiv.style.cursor = 'pointer';
+            // 移除或註解掉這段程式碼
+            /*
+            earthDiv.addEventListener('click', function() {
+                if (!isAnimating) {
+                    if (isFirstTrigger) {
+                        startAnimation();
+                    } else {
+                        resetLottery();
+                    }
+                }
+            });
+            */
+        });
+        
+        // 添加重置抽籤的函數
+        function resetLottery() {
+            // 隱藏最終結果
+            const finalText = document.getElementById('finalText');
+            const titleText = document.getElementById('titleText');
+            const earthMessage = document.getElementById('earthMessage');
+            
+            finalText.classList.remove('show-final');
+            titleText.classList.remove('show-final');
+            finalText.style.opacity = '0';
+            titleText.style.opacity = '0';
+            earthMessage.style.opacity = '0';
+            
+            setTimeout(() => {
+                finalText.style.display = 'none';
+                titleText.style.display = 'none';
+                earthMessage.style.display = 'none';
+                
+                // 重新顯示所有文字元素
+                textElements.forEach(el => {
+                    el.style.display = 'block';
+                    el.style.opacity = '0';
+                });
+                
+                // 重置角度
+                angle = 0;
+                
+                // 初始化文字位置
+                initializeTextPositions();
+                
+                setTimeout(() => {
+                    textElements.forEach(el => {
+                        el.style.opacity = '';
+                        el.style.transition = 'all 0.3s ease-out';
+                    });
+                    
+                    // 開始新的動畫
+                    startAnimation();
+                }, 100);
+            }, 500);
+        }
+
+        // Resize event
+        window.addEventListener('resize', () => {
+            if (isAnimating) {
+                updatePositions();
+            } else {
+                initializeTextPositions();
+            }
+        });
+    </script>
+</body>
+</html>
