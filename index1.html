@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>法母的話語</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #text-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        .message-line {
+            position: absolute;
+            white-space: nowrap;
+            opacity: 0;
+            transform: scale(0.5) rotate(0deg);
+            transition: all 1s ease;
+            background: linear-gradient(45deg, #ff0000, #00ff00, #0000ff, #ff00ff, #00ffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .message-line.show {
+            opacity: 1;
+            transform: scale(1) rotate(var(--rotate));
+        }
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div id="text-container"></div>
+
+    <script>
+        const messages = [
+            "法母的話語",
+            "01.具備充滿自己特性的美德",
+            "02.勿忘身為真如教徒",
+            "03.溫柔且堅強",
+            "04.不以自我為中心",
+            "05.莫讓他人難過",
+            "06.批評別人之前先反省自己",
+            "07.不在背後道人長短",
+            "08.勿堅持己見",
+            "09.設身處地為他人著想",
+            "10.身心清淨",
+            "11.經常微笑待人",
+            "12.成為令人珍惜的人",
+            "13.為人誠實",
+            "14.不引起爭執",
+            "15.謙恭穩重",
+            "16.尊重他人",
+            "17.不說不必要的話"
+        ];
+
+        let currentMessageIndex = 0;
+        let currentChar = 0;
+        const displayDelay = 80;
+        const clearDelay = 3000;
+        let currentLineElement = null;
+        const usedPositions = [];
+
+        function getRandomGradient() {
+            // 產生隨機漸層色
+            const color1 = randomColor();
+            const color2 = randomColor();
+            const color3 = randomColor();
+            return `linear-gradient(45deg, ${color1}, ${color2}, ${color3})`;
+        }
+
+        function randomColor() {
+            return '#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0');
+        }
+
+        function getNonOverlappingPosition(container, element) {
+            const containerRect = container.getBoundingClientRect();
+            const maxLeft = containerRect.width - element.offsetWidth;
+            const maxTop = containerRect.height - element.offsetHeight;
+            let tryCount = 0;
+            while (tryCount < 100) {
+                const left = Math.random() * maxLeft;
+                const top = Math.random() * maxTop;
+                if (!isOverlapping(left, top, element.offsetWidth, element.offsetHeight)) {
+                    usedPositions.push({ left, top, width: element.offsetWidth, height: element.offsetHeight });
+                    return { left, top };
+                }
+                tryCount++;
+            }
+            // 若找不到不重疊位置，隨機一個
+            return {
+                left: Math.random() * maxLeft,
+                top: Math.random() * maxTop
+            };
+        }
+
+        function isOverlapping(x, y, w, h) {
+            for (const pos of usedPositions) {
+                const x2 = pos.left;
+                const y2 = pos.top;
+                const w2 = pos.width;
+                const h2 = pos.height;
+                const overlapX = Math.max(0, Math.min(x + w, x2 + w2) - Math.max(x, x2));
+                const overlapY = Math.max(0, Math.min(y + h, y2 + h2) - Math.max(y, y2));
+                const overlapArea = overlapX * overlapY;
+                const area1 = w * h;
+                const area2 = w2 * h2;
+                const maxOverlapRatio = 0.2;
+                if (overlapArea > 0) {
+                    const ratio1 = overlapArea / area1;
+                    const ratio2 = overlapArea / area2;
+                    if (ratio1 > maxOverlapRatio || ratio2 > maxOverlapRatio) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function displayText() {
+            const container = document.getElementById('text-container');
+            if (currentChar === 0) {
+                currentLineElement = document.createElement('div');
+                currentLineElement.className = 'message-line';
+                container.appendChild(currentLineElement);
+
+                // 隨機字型大小與粗細
+                const fontSize = (3 + Math.random() * 3).toFixed(1) + 'em';
+                currentLineElement.style.fontSize = fontSize;
+                currentLineElement.style.fontWeight = Math.random() > 0.5 ? 'bold' : 'normal';
+
+                // 先置中顯示
+                currentLineElement.style.left = "50%";
+                currentLineElement.style.top = "10%";
+                currentLineElement.style.transform = "translate(-50%, 0) scale(0.5)";
+
+                // 隨機漸層色
+                const gradient = getRandomGradient();
+                currentLineElement.style.background = gradient;
+                currentLineElement.style.backgroundClip = 'text';
+                currentLineElement.style.webkitBackgroundClip = 'text';
+                currentLineElement.style.webkitTextFillColor = 'transparent';
+                currentLineElement.textContent = ""; // 清空內容
+            }
+
+            const currentMessage = messages[currentMessageIndex];
+
+            if (currentChar < currentMessage.length) {
+                // 只更新內容，避免多次重繪
+                currentLineElement.textContent = currentMessage.slice(0, currentChar + 1);
+                currentChar++;
+                setTimeout(displayText, displayDelay);
+            } else {
+                // 取得不重疊位置
+                const pos = getNonOverlappingPosition(container, currentLineElement);
+                currentLineElement.style.left = `${pos.left}px`;
+                currentLineElement.style.top = `${pos.top}px`;
+                currentLineElement.style.transform = "scale(0.5) rotate(0deg)";
+                currentLineElement.offsetWidth; // 強制重繪
+                const rotDegree = Math.floor(Math.random() * 360) + 'deg';
+                currentLineElement.style.setProperty('--rotate', rotDegree);
+                currentLineElement.classList.add('show');
+
+                if (Math.random() > 0.5) {
+                    currentLineElement.style.animation = "float 3s ease-in-out infinite";
+                }
+
+                currentMessageIndex++;
+                currentChar = 0;
+                if (currentMessageIndex < messages.length) {
+                    setTimeout(displayText, displayDelay);
+                } else {
+                    setTimeout(() => {
+                        container.innerHTML = '';
+                        usedPositions.length = 0;
+                        currentMessageIndex = 0;
+                        currentChar = 0;
+                        displayText();
+                    }, clearDelay);
+                }
+            }
+        }
+
+        displayText();
+    </script>
+</body>
+</html>
