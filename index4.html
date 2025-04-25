@@ -171,8 +171,8 @@
         /* --- Buttons Styling --- */
          .lottery-button, .restart-button {
              position: fixed;
-             padding: 12px 25px;
-             font-size: 18px;
+             padding: 15px 30px;
+             font-size: 24px; /* 與其他檔案一致 */
              border: none;
              border-radius: 50px;
              cursor: pointer;
@@ -183,9 +183,9 @@
 
          .lottery-button {
              right: 20px;
-             top: 20px;
+             top: 30px;      /* 修正為30px，與其他檔案一致 */
              background-color: #ffeb3b;
-             color: #333; /* Darker text for yellow button */
+             color: #333;
          }
         .lottery-button:hover {
             background-color: #fff;
@@ -194,12 +194,12 @@
 
          .restart-button {
              right: 20px;
-             top: 90px; /* Spaced below lottery button */
-             background-color: #4CAF50; /* Green */
+             top: 120px;     /* 修正為120px，與其他檔案一致 */
+             background-color: #4CAF50;
              color: white;
          }
         .restart-button:hover {
-            background-color: #66bb6a; /* Lighter green */
+            background-color: #66bb6a;
             box-shadow: 0 8px 20px rgba(76, 175, 80, 0.5);
         }
 
@@ -210,7 +210,7 @@
                 height: 300px;
             }
             .text-segment {
-                font-size: 1.1em; /* Slightly smaller text on mobile */
+                font-size: 1em !important;
                 padding: 8px 12px;
             }
             #finalText {
@@ -218,16 +218,16 @@
                 width: 90%;
             }
             #titleText {
-                font-size: 2em;
-                top: 8%;
+                font-size: 3em !important;   /* 手機版標題加大 */
+                top: 15% !important;         /* 與 index.html、index2.html 一致 */
             }
             .lottery-button, .restart-button {
-                padding: 10px 20px;
-                font-size: 14px;
-                right: 15px;
+                padding: 8px 15px !important;
+                font-size: 14px !important; /* 修正為14px，與其他檔案一致 */
+                right: 10px;
             }
-            .lottery-button { top: 15px; }
-            .restart-button { top: 75px; }
+            .lottery-button { top: 20px; }
+            .restart-button { top: 70px; }
         }
 
         @media (max-width: 480px) {
@@ -236,7 +236,7 @@
                 height: 250px;
             }
             .text-segment {
-                font-size: 1em; /* Even smaller */
+                font-size: 1em !重要;
                 padding: 6px 10px;
             }
             #finalText {
@@ -244,15 +244,16 @@
                  width: 95%;
             }
              #titleText {
-                font-size: 1.6em;
-                top: 6%;
+                font-size: 2.2em !important;
+                top: 15% !important;
             }
             .lottery-button, .restart-button {
-                padding: 8px 15px;
-                font-size: 12px;
+                padding: 8px 15px !important;
+                font-size: 14px !重要; /* 修正為14px，與其他檔案一致 */
+                right: 10px;
             }
-            .lottery-button { top: 10px; }
-            .restart-button { top: 60px; }
+            .lottery-button { top: 20px; }
+            .restart-button { top: 70px; }
         }
 
         /* Hide earth message div as it's not used in this version */
