@@ -182,33 +182,59 @@
                 currentLineElement.className = 'message-line';
                 container.appendChild(currentLineElement);
 
-                // 隨機字型大小與粗細
-                const fontSize = (3 + Math.random() * 3).toFixed(1) + 'em';
-                currentLineElement.style.fontSize = fontSize;
-                currentLineElement.style.fontWeight = Math.random() > 0.5 ? 'bold' : 'normal';
-
-                // 先置中顯示
-                currentLineElement.style.left = "50%";
-                currentLineElement.style.top = "10%";
-                currentLineElement.style.transform = "translate(-50%, 0) scale(0.5)";
-
-                // 隨機漸層色
-                const gradient = getRandomGradient();
-                currentLineElement.style.background = gradient;
-                currentLineElement.style.backgroundClip = 'text';
-                currentLineElement.style.webkitBackgroundClip = 'text';
-                currentLineElement.style.webkitTextFillColor = 'transparent';
-                currentLineElement.textContent = ""; // 清空內容
+                // 第一行特殊動畫
+                if (currentMessageIndex === 0) {
+                    currentLineElement.style.fontWeight = 'bold';
+                    currentLineElement.style.fontSize = '6em'; // 原本4em，加大50%
+                    currentLineElement.style.transition = 'font-size 5s cubic-bezier(0.4,0,0.2,1), opacity 1s';
+                    currentLineElement.style.opacity = '1';
+                    currentLineElement.style.left = "50%";
+                    currentLineElement.style.top = "30%";
+                    currentLineElement.style.transform = "translate(-50%, 0) scale(1)";
+                    // 紫色系列漸層
+                    const gradient = 'linear-gradient(90deg, #a259ff, #6a11cb, #b721ff, #f857a6, #a259ff)';
+                    currentLineElement.style.background = gradient;
+                    currentLineElement.style.backgroundClip = 'text';
+                    currentLineElement.style.webkitBackgroundClip = 'text';
+                    currentLineElement.style.webkitTextFillColor = 'transparent';
+                    currentLineElement.textContent = ""; // 清空內容
+                } else {
+                    // 其他行
+                    const fontSize = (3 + Math.random() * 3).toFixed(1) + 'em';
+                    currentLineElement.style.fontSize = fontSize;
+                    currentLineElement.style.fontWeight = Math.random() > 0.5 ? 'bold' : 'normal';
+                    currentLineElement.style.left = "50%";
+                    currentLineElement.style.top = "10%";
+                    currentLineElement.style.transform = "translate(-50%, 0) scale(0.5)";
+                    const gradient = getRandomGradient();
+                    currentLineElement.style.background = gradient;
+                    currentLineElement.style.backgroundClip = 'text';
+                    currentLineElement.style.webkitBackgroundClip = 'text';
+                    currentLineElement.style.webkitTextFillColor = 'transparent';
+                    currentLineElement.textContent = "";
+                }
             }
 
             const currentMessage = messages[currentMessageIndex];
 
             if (currentChar < currentMessage.length) {
-                // 只更新內容，避免多次重繪
                 currentLineElement.textContent = currentMessage.slice(0, currentChar + 1);
                 currentChar++;
                 setTimeout(displayText, displayDelay);
             } else {
+                if (currentMessageIndex === 0) {
+                    // 第一行動畫：5秒漸大
+                    setTimeout(() => {
+                        currentLineElement.style.fontSize = '9em'; // 6em * 1.5 = 9em
+                    }, 50);
+                    setTimeout(() => {
+                        currentMessageIndex++;
+                        currentChar = 0;
+                        displayText();
+                    }, 5000);
+                    return;
+                }
+
                 // 取得不重疊位置
                 const pos = getNonOverlappingPosition(container, currentLineElement);
                 currentLineElement.style.left = `${pos.left}px`;
