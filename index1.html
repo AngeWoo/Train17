@@ -34,6 +34,15 @@
             opacity: 1;
             transform: scale(1) rotate(var(--rotate));
         }
+        
+        /* 手機版標題直立顯示 */
+        @media (max-width: 768px) {
+            .message-line:first-child {
+                writing-mode: vertical-rl;
+                text-orientation: upright;
+                letter-spacing: 0.2em;
+            }
+        }
         @keyframes float {
             0% { transform: translateY(0); }
             50% { transform: translateY(-20px); }
