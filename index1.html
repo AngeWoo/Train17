@@ -30,6 +30,15 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        @media (max-width: 768px) {
+            .message-line {
+                writing-mode: vertical-rl;
+                text-orientation: upright;
+                white-space: normal;
+                width: auto;
+                height: auto;
+            }
+        }
         .message-line.show {
             opacity: 1;
             transform: scale(1) rotate(var(--rotate));
@@ -67,19 +76,6 @@
         #audio-tip .icon {
             font-size: 1.2em;
             margin-right: 6px;
-        }
-        @media (max-width: 768px) {
-            .message-line.vertical-text {
-                writing-mode: vertical-rl;
-                text-orientation: upright;
-                line-height: 1.1;
-                letter-spacing: 0.1em;
-                white-space: normal;
-                width: auto;
-                height: 80vh;
-                max-height: 90vh;
-                max-width: 100vw;
-            }
         }
     </style>
 </head>
@@ -175,7 +171,7 @@
                 const overlapY = Math.max(0, Math.min(y + h, y2 + h2) - Math.max(y, y2));
                 const overlapArea = overlapX * overlapY;
                 const area1 = w * h;
-                const area2 = w2 * h;
+                const area2 = w2 * h2;
                 const maxOverlapRatio = 0.2;
                 if (overlapArea > 0) {
                     const ratio1 = overlapArea / area1;
@@ -195,29 +191,24 @@
                 currentLineElement.className = 'message-line';
                 container.appendChild(currentLineElement);
 
+                // 第一行特殊動畫
                 if (currentMessageIndex === 0) {
                     currentLineElement.style.fontWeight = 'bold';
-                    currentLineElement.style.fontSize = '6em';
+                    currentLineElement.style.fontSize = '6em'; // 原本4em，加大50%
                     currentLineElement.style.transition = 'font-size 5s cubic-bezier(0.4,0,0.2,1), opacity 1s';
                     currentLineElement.style.opacity = '1';
                     currentLineElement.style.left = "50%";
                     currentLineElement.style.top = "30%";
                     currentLineElement.style.transform = "translate(-50%, 0) scale(1)";
+                    // 紫色系列漸層
                     const gradient = 'linear-gradient(90deg, #a259ff, #6a11cb, #b721ff, #f857a6, #a259ff)';
                     currentLineElement.style.background = gradient;
                     currentLineElement.style.backgroundClip = 'text';
                     currentLineElement.style.webkitBackgroundClip = 'text';
                     currentLineElement.style.webkitTextFillColor = 'transparent';
-                    currentLineElement.textContent = "";
-
-                    if (window.innerWidth <= 768) {
-                        currentLineElement.classList.add('vertical-text');
-                        currentLineElement.style.fontSize = '3.5em';
-                        currentLineElement.style.left = "50%";
-                        currentLineElement.style.top = "50%";
-                        currentLineElement.style.transform = "translate(-50%, -50%) scale(1)";
-                    }
+                    currentLineElement.textContent = ""; // 清空內容
                 } else {
+                    // 其他行
                     const fontSize = (3 + Math.random() * 3).toFixed(1) + 'em';
                     currentLineElement.style.fontSize = fontSize;
                     currentLineElement.style.fontWeight = Math.random() > 0.5 ? 'bold' : 'normal';
@@ -241,12 +232,9 @@
                 setTimeout(displayText, displayDelay);
             } else {
                 if (currentMessageIndex === 0) {
+                    // 第一行動畫：5秒漸大
                     setTimeout(() => {
-                        if (window.innerWidth <= 768) {
-                            currentLineElement.style.fontSize = '5.5em';
-                        } else {
-                            currentLineElement.style.fontSize = '9em';
-                        }
+                        currentLineElement.style.fontSize = '9em'; // 6em * 1.5 = 9em
                     }, 50);
                     setTimeout(() => {
                         currentMessageIndex++;
@@ -256,11 +244,12 @@
                     return;
                 }
 
+                // 取得不重疊位置
                 const pos = getNonOverlappingPosition(container, currentLineElement);
                 currentLineElement.style.left = `${pos.left}px`;
                 currentLineElement.style.top = `${pos.top}px`;
                 currentLineElement.style.transform = "scale(0.5) rotate(0deg)";
-                currentLineElement.offsetWidth;
+                currentLineElement.offsetWidth; // 強制重繪
                 const rotDegree = Math.floor(Math.random() * 360) + 'deg';
                 currentLineElement.style.setProperty('--rotate', rotDegree);
                 currentLineElement.classList.add('show');
