@@ -3,475 +3,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>苑歌月曆抽籤</title>
+    <title>苑歌月曆 - 星際召喚</title>
     <link rel="icon" href="data:,">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    
     <style>
+        :root {
+            --glow-color: #00ffff;
+            --secondary-glow-color: #ff00ff;
+            --text-color: #ffffff;
+            --background-color: #000010;
+        }
         html, body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; position: relative; background-color: var(--background-color);
+            font-family: 'Josefin Sans', 'Microsoft JhengHei', sans-serif;
+            color: var(--text-color); user-select: none;
+        }
+        .starfield {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; transition: transform 3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .starfield.accelerate { transform: scale(1.5); }
+        .stars {
+            background-image:
+                radial-gradient(1px 1px at 20px 30px, #eee, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 40px 70px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 50px 160px, #ddd, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 160px 120px, #ddd, rgba(0,0,0,0));
+            background-repeat: repeat; background-size: 200px 200px;
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            opacity: 0; animation: zoomIn 5s linear forwards, twinkle 10s linear infinite;
+        }
+        #stars1 { animation-duration: 50s; }
+        #stars2 { animation-duration: 100s; animation-delay: 1s; opacity: 0.8; }
+        #stars3 { animation-duration: 150s; animation-delay: 2s; opacity: 0.6; }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+        @keyframes twinkle { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+        .main-container {
+            position: relative; z-index: 10; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            gap: 50px; transition: opacity 1s ease;
+        }
+        #cosmic-orb { width: 200px; height: 200px; position: relative; cursor: pointer; transition: transform 0.5s ease, opacity 1s ease; }
+        #cosmic-orb::before, #cosmic-orb::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; }
+        #cosmic-orb::before { background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%); animation: pulse 4s ease-in-out infinite; filter: blur(20px); }
+        #cosmic-orb::after { background: radial-gradient(circle at 30% 30%, #fff 0%, rgba(255,255,255,0) 15%), radial-gradient(circle, transparent 50%, var(--secondary-glow-color) 120%); animation: rotate 15s linear infinite; }
+        #cosmic-orb:hover { transform: scale(1.1); }
+        #cosmic-orb.charging { animation: charge 3s linear forwards; }
+        #cosmic-orb.vanish { opacity: 0; transform: scale(3); }
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes charge { 0% { transform: scale(1); } 100% { transform: scale(1.5); filter: brightness(3) drop-shadow(0 0 30px var(--glow-color)); } }
+        .action-button {
+            padding: 15px 40px; font-size: 20px; font-weight: 600; color: var(--text-color);
+            background: linear-gradient(45deg, var(--glow-color), var(--secondary-glow-color));
+            border: none; border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0 15px var(--glow-color), 0 0 25px var(--glow-color) inset;
+            text-shadow: 0 0 5px rgba(255,255,255,0.7); opacity: 1;
+        }
+        .action-button:hover { transform: scale(1.05) translateY(-2px); box-shadow: 0 0 25px var(--glow-color), 0 0 40px var(--glow-color) inset; }
+        .action-button.hidden { opacity: 0; pointer-events: none; }
+        #restart-button { background: linear-gradient(45deg, #4CAF50, #81C784); box-shadow: 0 0 15px #4CAF50, 0 0 25px #4CAF50 inset; }
+
+        /* 【修改】結果畫面的佈局策略 */
+        #result-screen {
+            position: fixed; top: 0; left: 0;
             width: 100%;
-            height: 100%;
-            overflow: hidden;
-            position: relative;
-            background-color: #000;
-            user-select: none;
-        }
-
-        .earth {
-            width: 500px;
-            height: 500px;
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            border-radius: 50%;
-            background: url('./earth.jpg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
+            height: 100vh;
             z-index: 20;
-            box-shadow: 0 0 50px rgba(255, 255, 255, 0.5);
-            border: 3px solid rgba(255, 255, 255, 0.7);
-            overflow: visible;
-        }
 
-        .text-segment {
-            position: absolute;
-            color: #fff;
-            font-size: 1.3em;
-            white-space: nowrap;
-            transition: all 0.3s ease-out;
-            padding: 10px;
-            border-radius: 5px;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-            opacity: 0.7;
-            transform-origin: center;
-            z-index: 5;
-        }
-
-        .text-segment:hover {
-            opacity: 1;
-            font-size: 1.5em;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
-        }
-
-        #finalText {
-            position: absolute;
-            left: 50%;
-            /* 【修正】將文字稍微向上移動，避免被截斷 */
-            top: 82%;
-            transform: translate(-50%, -50%) scale(0);
-            font-size: 4.5em;
-            font-weight: bold;
-            color: #ffeb3b;
-            display: none;
-            text-align: center;
-            white-space: pre-line;
-            text-shadow: 0 0 20px rgba(255,235,59,0.7), 0 0 40px rgba(255,235,59,0.4);
-            z-index: 20;
-            opacity: 0;
-            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-            width: 100%;
-            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* 垂直居中 */
+            align-items: center;     /* 水平居中 */
+            
+            padding: 20px;
             box-sizing: border-box;
-            line-height: 1.3;
-        }
+            
+            overflow-y: auto; /* 當內容過長時，整個畫面可以滾動 */
 
-        #titleText {
-            position: absolute;
-            left: 50%;
-            top: 15%;
-            transform: translate(-50%, -50%) scale(0);
-            font-size: 4.5em;
-            font-weight: bold;
-            color: #ffeb3b;
-            display: none;
-            white-space: nowrap;
-            text-shadow: 0 0 20px rgba(255,235,59,0.7), 0 0 40px rgba(255,235,59,0.4);
-            z-index: 20;
+            background: radial-gradient(circle, rgba(0,0,16,0.8) 0%, rgba(0,0,16,0.95) 100%);
             opacity: 0;
-            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        #earthMessage {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: 400px;
-            height: 400px;
-            display: none;
-            z-index: 21;
-            opacity: 0;
+            pointer-events: none;
             transition: opacity 1.5s ease;
         }
+        #result-screen.show { opacity: 1; pointer-events: auto; }
 
-        .show-final {
-            transform: translate(-50%, -50%) scale(1) !important;
-            opacity: 1 !important;
+        /* 【修改】將所有結果元素視為一個整體，用 gap 控制間距 */
+        #result-title, #result-number, #result-content, #restart-button {
+            flex-shrink: 0; /* 防止元素在空間不足時被壓縮 */
         }
-
-        .lottery-button, .restart-button {
-            position: fixed;
-            padding: 15px 30px;
-            font-size: 24px;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            z-index: 100;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        
+        #result-title {
+            font-size: 2em;
+            font-weight: 300;
+            letter-spacing: 5px;
+            text-align: center;
+            animation: fadeInDown 1.5s 0.2s both;
+            margin-bottom: 15px; /* 與下方內容的間距 */
         }
-
-        .lottery-button {
-            right: 20px;
-            top: 30px;
-            background-color: #ffeb3b;
-            color: #333;
+        #result-number {
+            font-size: 2.2em;
+            font-weight: 400;
+            text-shadow: 0 0 8px var(--secondary-glow-color);
+            animation: fadeInUp 1.5s 0.5s both;
         }
-        .lottery-button:hover {
-            background-color: #fff;
-            box-shadow: 0 8px 20px rgba(255, 235, 59, 0.5);
+        #result-content {
+            font-size: 2.8em;
+            font-weight: 600;
+            text-align: center;
+            text-shadow: 0 0 10px var(--glow-color), 0 0 20px var(--glow-color);
+            max-width: 90%;
+            line-height: 1.4;
+            animation: fadeInUp 1.5s 0.8s both;
         }
-
-        .restart-button {
-            right: 20px;
-            top: 120px;
-            background-color: #4CAF50;
-            color: white;
+        #restart-button {
+            margin-top: 40px; /* 與上方內容的間距 */
+            animation: fadeInUp 1.5s 1.2s both;
         }
-        .restart-button:hover {
-            background-color: #66bb6a;
-            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.5);
-        }
-
-        /* 手機版統一設定 */
+        
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-50px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+        
         @media (max-width: 768px) {
-            .earth {
-                width: 300px;
-                height: 300px;
-            }
-            .lottery-button, .restart-button {
-                padding: 8px 15px !important;
-                font-size: 14px !important;
-                right: 10px;
-            }
-            .lottery-button { top: 20px; }
-            .restart-button { top: 70px; }
-            .text-segment { font-size: 1em !important; }
-            #finalText { font-size: 2.5em !important; }
-        }
-        @media (max-width: 480px) {
-            .earth {
-                width: 250px;
-                height: 250px;
-            }
-            .lottery-button, .restart-button {
-                padding: 8px 15px !important;
-                font-size: 14px !important;
-                right: 10px;
-            }
-            .lottery-button { top: 20px; }
-            .restart-button { top: 70px; }
-            .text-segment { font-size: 1em !important; }
-            #finalText { font-size: 2em !important; }
-        }
-
-        /* 手機版標題字體加大，電腦版不變 */
-        @media (max-width: 768px) {
-            #titleText {
-                font-size: 3em !important;
-            }
-            #finalText {
-                font-size: 1.3em !important;
-            }
-        }
-        @media (max-width: 480px) {
-            #titleText {
-                font-size: 2.2em !important;
-            }
-            #finalText {
-                font-size: 1em !important;
-            }
+            #cosmic-orb { width: 150px; height: 150px; }
+            .action-button { padding: 12px 30px; font-size: 18px; }
+            #result-title { font-size: 1.5em; }
+            #result-number { font-size: 1.8em; }
+            #result-content { font-size: 2em; }
         }
     </style>
-    <script>
-        // 檢查地球圖片是否正確加載
-        window.addEventListener('load', function() {
-            const earthDiv = document.querySelector('.earth');
-            const img = new Image();
-            img.onload = function() {
-                console.log('地球圖片加載成功');
-            };
-            img.onerror = function() {
-                console.error('地球圖片加載失敗，使用備用樣式');
-                earthDiv.style.background = 'radial-gradient(circle, #1a4d7e, #0a2744)';
-                earthDiv.style.boxShadow = '0 0 60px rgba(26, 77, 126, 0.8)';
-            };
-            const bgImage = getComputedStyle(earthDiv).backgroundImage;
-            const urlMatch = bgImage.match(/url\(['"]?(.*?)['"]?\)/);
-            if (urlMatch && urlMatch[1]) {
-                img.src = urlMatch[1];
-            } else {
-                img.onerror();
-            }
-        });
-    </script>
 </head>
 <body>
-    <div class="earth"></div>
-    <button class="lottery-button">抽籤</button>
-    <button class="restart-button">重來</button>
-    <div id="finalText"></div>
-    <div id="titleText">苑歌月曆</div>
-    <div id="earthMessage"></div>
-    <audio id="bgMusic" preload="auto" loop>
-        <source src="112.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="applauseSound" preload="auto">
-        <source src="111.mp3" type="audio/mpeg">
-    </audio>
+    <div class="starfield">
+        <div id="stars1" class="stars"></div>
+        <div id="stars2" class="stars"></div>
+        <div id="stars3" class="stars"></div>
+    </div>
+
+    <div class="main-container" id="main-interface">
+        <div id="cosmic-orb"></div>
+        <button class="action-button" id="lottery-button">抽籤</button>
+    </div>
+    
+    <!-- 【修改】簡化結果畫面的 HTML 結構 -->
+    <div id="result-screen">
+        <div id="result-title">今日的苑歌</div>
+        <div id="result-number"></div>
+        <div id="result-content"></div>
+        <button class="action-button hidden" id="restart-button">抽籤</button>
+    </div>
+
+    <audio id="bgMusic" preload="auto" loop><source src="112.mp3" type="audio/mpeg"></audio>
+    <audio id="applauseSound" preload="auto"><source src="111.mp3" type="audio/mpeg"></audio>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
     <script>
+        // JavaScript 程式碼完全不需要修改
         let texts = [];
-        let textElements = [];
-        const radius = 420;
         let isAnimating = false;
-        let animationFrameId = null;
-        let angle = 0;
+        
         const bgMusic = document.getElementById('bgMusic');
         const applauseSound = document.getElementById('applauseSound');
+        const mainInterface = document.getElementById('main-interface');
+        const resultScreen = document.getElementById('result-screen');
+        const lotteryButton = document.getElementById('lottery-button');
+        const restartButton = document.getElementById('restart-button');
+        const cosmicOrb = document.getElementById('cosmic-orb');
+        const starfield = document.querySelector('.starfield');
         
         async function fetchSheetData() {
-            const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSJvh4hp9JZWYOKyACPM-TDXKe-4aMTNQfqNxbBloYlZjsZJ_2wSVSjL88TS340Bf7CeBqVwIXCM3KA/pub?gid=0&single=true&output=tsv';
+            const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSJvh4hp9JZWYOKyACPM-TDXKe-4aMTNQfqNxbBloYlZjsZJ_2wSVSjL88TS340Bf7CeBqVwIXCM3KA/pub?gid=0&single=true&output=csv';
             try {
                 const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const tsvText = await response.text();
-                const rows = tsvText.split(/\r?\n/);
-                const firstColumn = rows.map(row => row.split('\t')[0]);
-                texts = firstColumn.map(text => text.trim()).filter(text => text);
-                if (texts.length > 0 && (texts[0].toLowerCase().includes('header') || texts[0].match(/^[A-Za-z]/))) {
-                    texts.shift();
-                }
-
-                if (texts.length === 0) throw new Error("No data loaded from Google Sheet.");
-                
-                window.maxSegments = texts.length;
-                initializeTextElements();
+                if (!response.ok) throw new Error(`HTTP 錯誤!`);
+                const csvText = await response.text();
+                const rows = csvText.split('\n');
+                texts = rows
+                    .map(row => row.trim().replace(/^"|"$/g, ''))
+                    .filter(row => row);
+                if (texts.length === 0) throw new Error("No data fetched");
             } catch (error) {
                 console.error('獲取 Sheet 數據失敗，使用默認數據:', error);
                 texts = [
                     "01 具備充滿自己特性的美德", "02 勿忘身為真如教徒", "03 溫柔且堅強", "04 不以自我為中心",
                     "05 莫讓他人難過", "06 批評別人之前先反省自己", "07 不在背後道人長短", "08 勿堅持己見",
                     "09 設身處地為他人著想", "10 身心清淨", "11 經常微笑待人", "12 成為令人珍惜的人",
-                    "13 為人誠實", "14 不引起爭執", "15 謙恭穩重", "16 尊重他人",
-                    "17 不說不必要的話"
+                    "13 為人誠實", "14 不引起爭執", "15 謙恭穩重", "16 尊重他人", "17 不說不必要的話"
                 ];
-                window.maxSegments = texts.length;
-                initializeTextElements();
             }
         }
-        
-        function initializeTextElements() {
-            if (textElements.length > 0) {
-                textElements.forEach(el => el.remove());
-                textElements = [];
-            }
-            texts.forEach(text => {
-                const div = document.createElement('div');
-                div.className = 'text-segment';
-                div.textContent = text;
-                div.style.opacity = '0';
-                div.style.display = 'none';
-                document.body.appendChild(div);
-                textElements.push(div);
-            });
-            initializeTextPositions();
+
+        function triggerLottery() {
+            if (isAnimating) return;
+            isAnimating = true;
+            bgMusic.pause();
+            lotteryButton.classList.add('hidden');
+            cosmicOrb.classList.add('charging');
+            starfield.classList.add('accelerate');
+            bgMusic.currentTime = 0;
+            bgMusic.volume = 0.3;
+            bgMusic.play();
+            setTimeout(() => {
+                bgMusic.pause();
+                applauseSound.currentTime = 0;
+                applauseSound.volume = 0.7;
+                applauseSound.play();
+                cosmicOrb.classList.add('vanish');
+                const rect = cosmicOrb.getBoundingClientRect();
+                confetti({
+                    particleCount: 200, spread: 100,
+                    origin: { x: (rect.left + rect.right) / 2 / window.innerWidth, y: (rect.top + rect.bottom) / 2 / window.innerHeight },
+                    colors: ['#00ffff', '#ff00ff', '#ffffff']
+                });
+            }, 3000);
+            setTimeout(() => {
+                const selectedIndex = Math.floor(Math.random() * texts.length);
+                let selectedText = texts[selectedIndex] || "196 為自己修行無法生信仰心，為他人付出可深植信仰心(苑歌月曆-常樂12)";
+                const resultNumberEl = document.getElementById('result-number');
+                const resultContentEl = document.getElementById('result-content');
+                const parts = selectedText.match(/^(\d+)\s*(.*)/);
+                if (parts && parts.length > 2) {
+                    let content = parts[2].trim();
+                    if (content.startsWith('》')) content = content.substring(1).trim();
+                    resultNumberEl.textContent = `《${parts[1]}》`;
+                    resultContentEl.textContent = content;
+                } else {
+                    resultNumberEl.textContent = '';
+                    resultContentEl.textContent = selectedText;
+                }
+                mainInterface.style.opacity = '0';
+                resultScreen.classList.add('show');
+                restartButton.classList.remove('hidden');
+            }, 3500);
         }
 
         window.addEventListener('load', async () => {
             await fetchSheetData();
-            
-            bgMusic.volume = 0.5;
-            bgMusic.play().catch(() => {
-                document.addEventListener('click', () => bgMusic.play(), { once: true });
-            });
-            
-            setTimeout(() => {
-                textElements.forEach(el => {
-                    el.style.display = 'block';
-                    el.style.transition = 'opacity 0.5s ease-in-out';
-                    setTimeout(() => el.style.opacity = '0.7', 50);
-                });
-                startAnimation();
-            }, 100);
-
-            document.querySelector('.lottery-button').addEventListener('click', () => {
-                if (isAnimating) triggerLottery();
-            });
-
-            document.querySelector('.restart-button').addEventListener('click', () => location.reload());
-        });
-
-        function updatePositions() {
-            const centerX = window.innerWidth / 2;
-            const centerY = window.innerHeight / 2;
-            const dynamicRadius = (Math.min(centerX, centerY) * 0.8);
-
-            textElements.forEach((el, i) => {
-                const individualAngle = angle + (i * (2 * Math.PI / maxSegments));
-                const x = centerX + Math.cos(individualAngle) * dynamicRadius;
-                const y = centerY + Math.sin(individualAngle) * dynamicRadius;
-                el.style.left = `${x}px`;
-                el.style.top = `${y}px`;
-                el.style.transform = 'translate(-50%, -50%)';
-            });
-
-            angle += 0.005;
-        }
-
-        function animate() {
-            if (!isAnimating) return;
-            updatePositions();
-            animationFrameId = requestAnimationFrame(animate);
-        }
-
-        function startAnimation() {
-            if(isAnimating) return;
-            isAnimating = true;
-            animate();
-        }
-
-        function stopAnimation() {
-            isAnimating = false;
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-                animationFrameId = null;
-            }
-        }
-
-        function initializeTextPositions() {
-            const centerX = window.innerWidth / 2;
-            const centerY = window.innerHeight / 2;
-            const dynamicRadius = (Math.min(centerX, centerY) * 0.8);
-
-            textElements.forEach((el, i) => {
-                const individualAngle = i * (2 * Math.PI / maxSegments);
-                const x = centerX + Math.cos(individualAngle) * dynamicRadius;
-                const y = centerY + Math.sin(individualAngle) * dynamicRadius;
-                el.style.left = `${x}px`;
-                el.style.top = `${y}px`;
-                el.style.transform = 'translate(-50%, -50%)';
-            });
-        }
-
-        function triggerLottery() {
-            if(!isAnimating) return;
-            
-            stopAnimation();
-            bgMusic.pause();
-            
-            applauseSound.volume = 0.7;
-            applauseSound.currentTime = 0;
-            applauseSound.play();
-
-            const selectedIndex = Math.floor(Math.random() * texts.length);
-
-            textElements.forEach(el => {
-                el.style.transition = 'all 0.8s ease-out';
-                el.style.opacity = '0';
-                setTimeout(() => el.style.display = 'none', 800);
-            });
-
-            const selectedText = texts[selectedIndex];
-            const finalText = document.getElementById('finalText');
-            
-            if (window.innerWidth <= 768) {
-                const parts = selectedText.match(/^(\S+)\s+(.*)$/);
-                if (parts && parts.length >= 3) {
-                    finalText.textContent = `${parts[1]}\n${parts[2]}`;
-                } else {
-                    finalText.textContent = selectedText;
-                }
-            } else {
-                finalText.textContent = selectedText;
-            }
-
-            finalText.style.display = 'block';
-            
-            const titleText = document.getElementById('titleText');
-            titleText.style.display = 'block';
-
-            const earthMessage = document.getElementById('earthMessage');
-            earthMessage.style.display = 'block';
-            
-            const message = "向世界與未來傳揚真如慈救之利他行";
-            drawCurvedText(earthMessage, message);
-            
-            setTimeout(() => {
-                finalText.classList.add('show-final');
-                titleText.classList.add('show-final');
-                earthMessage.style.opacity = '1';
-                
-                // 【修正】移除錯誤的手機版位置調整，讓所有裝置都使用CSS的設定
-                const isMobile = window.innerWidth <= 768;
-                if (isMobile) {
-                    if (window.innerWidth <= 480) {
-                        finalText.style.fontSize = '1.2em';
-                    } else {
-                        finalText.style.fontSize = '1.6em';
-                    }
-                } else {
-                    finalText.style.fontSize = '1.75em';
-                }
-            }, 100);
-        }
-        
-        function drawCurvedText(container, text) {
-            container.innerHTML = '';
-            const canvas = document.createElement('canvas');
-            canvas.width = 450;
-            canvas.height = 450;
-            container.appendChild(canvas);
-            
-            const ctx = canvas.getContext('2d');
-            const isMobile = window.innerWidth <= 768;
-            const maxFontSize = isMobile ? 28 : 42;
-            const minFontSize = isMobile ? 8 : 12;
-            const lines = ['向世界與未來傳揚', '真如慈救之利他行'];
-            let currentSize = minFontSize;
-            let opacity = 0.3;
-            let isIncreasing = true;
-            
-            const animate = () => {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.font = `bold ${currentSize}px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif`;
-                ctx.fillStyle = `rgba(255, 235, 59, ${opacity})`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                
-                const lineHeight = currentSize * 1.2;
-                const centerY = canvas.height / 2;
-                lines.forEach((line, index) => {
-                    const y = centerY + (index - (lines.length - 1) / 2) * lineHeight;
-                    ctx.fillText(line, canvas.width / 2, y);
-                });
-                
-                if (currentSize < maxFontSize) {
-                    currentSize += 0.8;
-                } else {
-                    if (isIncreasing) {
-                        opacity += 0.01;
-                        if (opacity >= 1) isIncreasing = false;
-                    } else {
-                        opacity -= 0.01;
-                        if (opacity <= 0.3) isIncreasing = true;
-                    }
-                }
-                requestAnimationFrame(animate);
+            const playMusicOnce = () => {
+                bgMusic.volume = 0.2;
+                bgMusic.play().catch(e => console.log("背景音樂播放需要使用者互動"));
+                document.body.removeEventListener('click', playMusicOnce);
+                document.body.removeEventListener('touchstart', playMusicOnce);
             };
-            animate();
-        }
+            document.body.addEventListener('click', playMusicOnce);
+            document.body.addEventListener('touchstart', playMusicOnce);
+            lotteryButton.addEventListener('click', triggerLottery);
+            cosmicOrb.addEventListener('click', triggerLottery);
+            restartButton.addEventListener('click', () => { location.reload(); });
+        });
     </script>
 </body>
 </html>
