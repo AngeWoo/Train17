@@ -44,8 +44,7 @@
         #stars3 { animation-duration: 150s; animation-delay: 2s; opacity: 0.6; }
         @keyframes zoomIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
         @keyframes twinkle { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
-
-        /* 【全新】載入畫面樣式 */
+        
         #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
             z-index: 99; background-color: var(--background-color);
@@ -53,44 +52,42 @@
             gap: 20px;
             transition: opacity 0.5s ease-out;
         }
-        .loading-text {
-            font-size: 1.2em; letter-spacing: 2px;
-            opacity: 0.8;
-        }
-        .progress-bar {
-            width: 80%; max-width: 400px; height: 8px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            overflow: hidden;
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
-        }
-        .progress-bar-fill {
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, var(--secondary-glow-color), var(--glow-color), var(--secondary-glow-color));
-            background-size: 200% 100%;
-            animation: progress-flow 2s linear infinite;
-        }
-        @keyframes progress-flow {
-            from { background-position: 200% 0; }
-            to { background-position: -200% 0; }
-        }
+        .loading-text { font-size: 1.2em; letter-spacing: 2px; opacity: 0.8; }
+        .progress-bar { width: 80%; max-width: 400px; height: 8px; background-color: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden; box-shadow: 0 0 10px rgba(0, 255, 255, 0.2); }
+        .progress-bar-fill { width: 100%; height: 100%; background: linear-gradient(90deg, var(--secondary-glow-color), var(--glow-color), var(--secondary-glow-color)); background-size: 200% 100%; animation: progress-flow 2s linear infinite; }
+        @keyframes progress-flow { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 
-        /* 主介面樣式 */
         .main-container {
             position: relative; z-index: 10; width: 100%; height: 100%;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             gap: 50px;
-            opacity: 0; /* 【修改】預設隱藏 */
+            opacity: 0;
             transition: opacity 1s ease;
         }
-        .main-container.show {
-            opacity: 1; /* 用於顯示主介面 */
-        }
+        .main-container.show { opacity: 1; }
         
-        #cosmic-orb { width: 200px; height: 200px; position: relative; cursor: pointer; transition: transform 0.5s ease, opacity 1s ease; }
+        #cosmic-orb {
+            /* 【修改】將圓圈尺寸從 200px 改為 250px */
+            width: 250px;
+            height: 250px;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.5s ease, opacity 1s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4em;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow:
+                0 0 8px #fff,
+                0 0 15px var(--glow-color),
+                0 0 25px var(--glow-color);
+        }
+
         #cosmic-orb::before, #cosmic-orb::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; }
-        #cosmic-orb::before { background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%); animation: pulse 4s ease-in-out infinite; filter: blur(20px); }
-        #cosmic-orb::after { background: radial-gradient(circle at 30% 30%, #fff 0%, rgba(255,255,255,0) 15%), radial-gradient(circle, transparent 50%, var(--secondary-glow-color) 120%); animation: rotate 15s linear infinite; }
+        #cosmic-orb::before { z-index: -1; background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%); animation: pulse 4s ease-in-out infinite; filter: blur(20px); }
+        #cosmic-orb::after { z-index: -1; background: radial-gradient(circle at 30% 30%, #fff 0%, rgba(255,255,255,0) 15%), radial-gradient(circle, transparent 50%, var(--secondary-glow-color) 120%); animation: rotate 15s linear infinite; }
         #cosmic-orb:hover { transform: scale(1.1); }
         #cosmic-orb.charging { animation: charge 3s linear forwards; }
         #cosmic-orb.vanish { opacity: 0; transform: scale(3); }
@@ -127,7 +124,8 @@
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
         
         @media (max-width: 768px) {
-            #cosmic-orb { width: 150px; height: 150px; }
+            /* 【修改】調整手機版圓圈尺寸 */
+            #cosmic-orb { width: 180px; height: 180px; font-size: 3.2em; }
             .action-button { padding: 12px 30px; font-size: 18px; }
             #result-title { font-size: 1.5em; }
             #result-number { font-size: 1.8em; }
@@ -142,7 +140,6 @@
         <div id="stars3" class="stars"></div>
     </div>
 
-    <!-- 【全新】載入畫面 -->
     <div id="loading-screen">
         <div class="loading-text">資料載入中...</div>
         <div class="progress-bar">
@@ -150,13 +147,11 @@
         </div>
     </div>
 
-    <!-- 主介面 -->
     <div class="main-container" id="main-interface">
-        <div id="cosmic-orb"></div>
+        <div id="cosmic-orb">信</div>
         <button class="action-button" id="lottery-button">抽籤</button>
     </div>
     
-    <!-- 結果介面 -->
     <div id="result-screen">
         <div id="result-title">今日的苑歌</div>
         <div id="result-number"></div>
@@ -170,10 +165,10 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
     <script>
+        // JavaScript 程式碼完全不需要修改
         let texts = [];
         let isAnimating = false;
         
-        // 【修改】增加 loadingScreen 的變數
         const loadingScreen = document.getElementById('loading-screen');
         const mainInterface = document.getElementById('main-interface');
         const resultScreen = document.getElementById('result-screen');
@@ -250,24 +245,13 @@
             }, 3500);
         }
 
-        // 【修改】頁面載入流程
         window.addEventListener('load', async () => {
-            // 1. 載入畫面已預設顯示
-            
-            // 2. 開始獲取資料，並用 await 等待完成
             await fetchSheetData();
-            
-            // 3. 資料準備就緒，隱藏載入畫面
             loadingScreen.style.opacity = '0';
-            // 為了讓隱藏動畫有時間播放，並防止它繼續佔據空間
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
-            }, 500); // 0.5秒後徹底移除
-
-            // 4. 顯示主介面
+            }, 500);
             mainInterface.classList.add('show');
-
-            // 5. 設定音樂首次播放
             const playMusicOnce = () => {
                 bgMusic.volume = 0.2;
                 bgMusic.play().catch(e => console.log("背景音樂播放需要使用者互動"));
@@ -276,8 +260,6 @@
             };
             document.body.addEventListener('click', playMusicOnce);
             document.body.addEventListener('touchstart', playMusicOnce);
-
-            // 6. 綁定按鈕事件
             lotteryButton.addEventListener('click', triggerLottery);
             cosmicOrb.addEventListener('click', triggerLottery);
             restartButton.addEventListener('click', () => { location.reload(); });
