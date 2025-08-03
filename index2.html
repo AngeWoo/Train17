@@ -67,7 +67,6 @@
         .main-container.show { opacity: 1; }
         
         #cosmic-orb {
-            /* 【修改】將圓圈尺寸從 200px 改為 250px */
             width: 250px;
             height: 250px;
             position: relative;
@@ -116,7 +115,20 @@
         }
         #result-screen.show { opacity: 1; pointer-events: auto; }
         #result-title, #result-number, #result-content, #restart-button { flex-shrink: 0; }
-        #result-title { font-size: 2em; font-weight: 300; letter-spacing: 5px; text-align: center; animation: fadeInDown 1.5s 0.2s both; margin-bottom: 15px; }
+        
+        #result-title {
+            /* 【修改】放大字體並加粗 */
+            font-size: 2.8em;
+            font-weight: 600;
+            letter-spacing: 5px;
+            text-align: center;
+            animation: fadeInDown 1.5s 0.2s both;
+            margin-bottom: 15px;
+            text-shadow:
+                0 0 5px rgba(0, 255, 255, 0.7),
+                0 0 10px var(--glow-color);
+        }
+        
         #result-number { font-size: 2.2em; font-weight: 400; text-shadow: 0 0 8px var(--secondary-glow-color); animation: fadeInUp 1.5s 0.5s both; }
         #result-content { font-size: 2.8em; font-weight: 600; text-align: center; text-shadow: 0 0 10px var(--glow-color), 0 0 20px var(--glow-color); max-width: 90%; line-height: 1.4; animation: fadeInUp 1.5s 0.8s both; }
         #restart-button { margin-top: 40px; animation: fadeInUp 1.5s 1.2s both; }
@@ -124,10 +136,10 @@
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
         
         @media (max-width: 768px) {
-            /* 【修改】調整手機版圓圈尺寸 */
             #cosmic-orb { width: 180px; height: 180px; font-size: 3.2em; }
             .action-button { padding: 12px 30px; font-size: 18px; }
-            #result-title { font-size: 1.5em; }
+            /* 【修改】手機版標題字體也跟著放大 */
+            #result-title { font-size: 2em; }
             #result-number { font-size: 1.8em; }
             #result-content { font-size: 2em; }
         }
@@ -204,18 +216,21 @@
         function triggerLottery() {
             if (isAnimating) return;
             isAnimating = true;
-            bgMusic.pause();
+            
+            bgMusic.volume = 0.05;
+
             lotteryButton.classList.add('hidden');
             cosmicOrb.classList.add('charging');
             starfield.classList.add('accelerate');
-            bgMusic.currentTime = 0;
-            bgMusic.volume = 0.3;
-            bgMusic.play();
+            
             setTimeout(() => {
-                bgMusic.pause();
                 applauseSound.currentTime = 0;
                 applauseSound.volume = 0.7;
                 applauseSound.play();
+                applauseSound.addEventListener('ended', () => {
+                    bgMusic.volume = 0.2;
+                }, { once: true });
+
                 cosmicOrb.classList.add('vanish');
                 const rect = cosmicOrb.getBoundingClientRect();
                 confetti({
@@ -224,6 +239,7 @@
                     colors: ['#00ffff', '#ff00ff', '#ffffff']
                 });
             }, 3000);
+
             setTimeout(() => {
                 const selectedIndex = Math.floor(Math.random() * texts.length);
                 let selectedText = texts[selectedIndex] || "196 為自己修行無法生信仰心，為他人付出可深植信仰心(苑歌月曆-常樂12)";
