@@ -8,8 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="index2.min.css?v=1.0.3">
+    <!-- 引入壓縮 CSS，含快取控制 -->
+    <link rel="stylesheet" href="index2.min.css?v=1.0.5">
 </head>
 <body>
     <div class="starfield">
@@ -26,7 +26,10 @@
     </div>
 
     <div class="main-container" id="main-interface">
-        <div id="cosmic-orb">信</div>
+        <!-- 3D 能量光球容器與文字 -->
+        <div id="cosmic-orb">
+            <span class="orb-text">信</span>
+        </div>
         <button class="action-button" id="lottery-button">抽籤</button>
     </div>
     
@@ -40,8 +43,10 @@
     <audio id="bgMusic" preload="none" loop><source src="112.mp3" type="audio/mpeg"></audio>
     <audio id="applauseSound" preload="none"><source src="111.mp3" type="audio/mpeg"></audio>
     
+    <!-- 引入 本地 Three.js 程式庫與外部壓縮 JS -->
+    <script src="three.min.js?v=1.0.5" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js" defer></script>
-
-    <script src="index2.min.js?v=1.0.3" defer></script>
+    <!-- 引入壓縮 JS，含快取控制 -->
+    <script src="index2.min.js?v=1.0.5" defer></script>
 </body>
 </html>

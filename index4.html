@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>苑史抽籤</title>
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="index4.min.css?v=1.0.3">
+    <!-- 引入壓縮 CSS，含快取控制 -->
+    <link rel="stylesheet" href="index4.min.css?v=1.0.5">
 </head>
 <body>
     <div id="earth-container"></div>
@@ -17,8 +18,8 @@
     <audio id="bgMusic" preload="none" loop><source src="112.mp3" type="audio/mpeg"></audio>
     <audio id="applauseSound" preload="none"><source src="111.mp3" type="audio/mpeg"></audio>
 
-    <!-- 引入 Three.js 程式庫 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="index4.min.js?v=1.0.3" defer></script>
+    <!-- 引入 本地 Three.js 程式庫與外部壓縮 JS -->
+    <script src="three.min.js?v=1.0.5" defer></script>
+    <script src="index4.min.js?v=1.0.5" defer></script>
 </body>
 </html>
